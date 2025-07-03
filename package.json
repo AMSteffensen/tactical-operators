@@ -1,0 +1,58 @@
+{
+  "name": "tactical-operator",
+  "version": "0.1.0",
+  "description": "Tactical top-down multiplayer shooter with RPG mechanics",
+  "private": true,
+  "workspaces": [
+    "web-client",
+    "api-server", 
+    "mobile-app",
+    "shared"
+  ],
+  "scripts": {
+    "install-all": "npm install && npm run install:web && npm run install:api && npm run install:mobile",
+    "install:web": "cd web-client && npm install",
+    "install:api": "cd api-server && npm install", 
+    "install:mobile": "cd mobile-app && npm install",
+    "dev": "concurrently --names \"API,WEB\" --prefix-colors \"blue,green\" \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:script": "./scripts/dev-start.sh",
+    "status": "./scripts/status-check.sh",
+    "test:env": "./scripts/test-env.sh",
+    "dev:full": "concurrently --names \"DB,API,WEB\" --prefix-colors \"yellow,blue,green\" \"npm run docker:db\" \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "cd web-client && npm run dev",
+    "dev:api": "cd api-server && npm run dev",
+    "dev:mobile": "cd mobile-app && npm start",
+    "start": "concurrently --names \"API,WEB\" --prefix-colors \"blue,green\" \"npm run start:api\" \"npm run start:web\"",
+    "start:api": "cd api-server && npm start",
+    "start:web": "cd web-client && npm run preview",
+    "build": "npm run build:shared && npm run build:api && npm run build:web",
+    "build:shared": "cd shared && npm run build",
+    "build:web": "cd web-client && npm run build",
+    "build:api": "cd api-server && npm run build",
+    "test": "npm run test:api && npm run test:web",
+    "test:api": "cd api-server && npm test",
+    "test:web": "cd web-client && npm test",
+    "lint": "npm run lint:web && npm run lint:api",
+    "lint:web": "cd web-client && npm run lint",
+    "lint:api": "cd api-server && npm run lint",
+    "docker:db": "docker-compose -f docker-compose.dev.yml up -d",
+    "docker:db:down": "docker-compose -f docker-compose.dev.yml down",
+    "docker:db:logs": "docker-compose -f docker-compose.dev.yml logs -f postgres",
+    "docker:dev": "docker-compose --profile full up -d",
+    "docker:dev:down": "docker-compose down",
+    "docker:dev:logs": "docker-compose logs -f",
+    "docker:build": "docker-compose build",
+    "clean": "npm run docker:db:down && rm -rf */node_modules */dist */.next"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.0.0",
+    "eslint": "^8.50.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

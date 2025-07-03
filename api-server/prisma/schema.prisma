@@ -1,0 +1,137 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  characters Character[]
+  guilds     GuildMember[]
+  campaigns  CampaignParticipant[]
+
+  @@map("users")
+}
+
+model Character {
+  id          String   @id @default(cuid())
+  name        String
+  class       String
+  level       Int      @default(1)
+  experience  Int      @default(0)
+  health      Int      @default(100)
+  maxHealth   Int      @default(100)
+  stats       Json     // { strength, agility, intelligence, etc. }
+  inventory   Json     // Array of items
+  equipment   Json     // Equipped items
+  skills      Json     // Array of skills
+  traits      Json     // Array of traits/perks
+  economy     Json     // { currency, bank, etc. }
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  campaigns CampaignParticipant[]
+
+  @@map("characters")
+}
+
+model Guild {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  bank        Json     // Shared economy
+  permissions Json     // Role-based permissions
+  settings    Json     // Guild configuration
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members   GuildMember[]
+  campaigns Campaign[]
+
+  @@map("guilds")
+}
+
+model GuildMember {
+  id        String   @id @default(cuid())
+  role      String   @default("member") // owner, officer, member
+  joinedAt  DateTime @default(now())
+
+  // Relations
+  userId  String
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guildId String
+  guild   Guild @relation(fields: [guildId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, guildId])
+  @@map("guild_members")
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  mapData     Json     // Persistent map state
+  objectives  Json     // Campaign objectives
+  progress    Json     // Campaign progress tracking
+  settings    Json     // Campaign configuration
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  guildId      String?
+  guild        Guild? @relation(fields: [guildId], references: [id])
+  participants CampaignParticipant[]
+  sessions     GameSession[]
+
+  @@map("campaigns")
+}
+
+model CampaignParticipant {
+  id        String   @id @default(cuid())
+  joinedAt  DateTime @default(now())
+
+  // Relations
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  campaignId  String
+  campaign    Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, campaignId])
+  @@map("campaign_participants")
+}
+
+model GameSession {
+  id         String   @id @default(cuid())
+  sessionData Json    // Session state and events
+  outcome     Json?   // Session results
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  
+  // Relations
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@map("game_sessions")
+}

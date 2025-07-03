@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: tactical-operator-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tactical_operator
+      POSTGRES_USER: tactical_user
+      POSTGRES_PASSWORD: tactical_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./api-server/database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tactical_user -d tactical_operator"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for session storage and caching (optional but useful for production)
+  redis:
+    image: redis:7-alpine
+    container_name: tactical-operator-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # API Server (for development with hot reload)
+  api-server:
+    build:
+      context: ./api-server
+      dockerfile: Dockerfile.dev
+    container_name: tactical-operator-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://tactical_user:tactical_password@postgres:5432/tactical_operator
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: dev-jwt-secret-change-in-production
+      PORT: 5000
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./api-server:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - full
+
+  # Web Client (for development with hot reload)
+  web-client:
+    build:
+      context: ./web-client
+      dockerfile: Dockerfile.dev
+    container_name: tactical-operator-web
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:5000/api
+      VITE_SOCKET_URL: http://localhost:5000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web-client:/app
+      - /app/node_modules
+    depends_on:
+      - api-server
+    profiles:
+      - full
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  default:
+    name: tactical-operator-network
