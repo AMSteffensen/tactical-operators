@@ -1,23 +1,16 @@
 import React from 'react';
+import { TacticalView } from '../components/TacticalView';
 
 export const Game: React.FC = () => {
   return (
     <div className="h-full">
       <div className="text-center mb-4">
-        <h1 className="text-2xl font-bold text-white">Game View</h1>
-        <p className="text-gray-300">WebGL rendering will be implemented here</p>
+        <h1 className="text-2xl font-bold text-white">Tactical Operations</h1>
+        <p className="text-gray-300">WebGL-powered tactical combat view</p>
       </div>
 
-      <div className="flex justify-center">
-        <div className="game-canvas w-full max-w-4xl h-96 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-4">🎮</div>
-            <p className="text-gray-400">Game rendering system coming soon!</p>
-            <p className="text-sm text-gray-500 mt-2">
-              This will feature the WebGL top-down tactical view
-            </p>
-          </div>
-        </div>
+      <div className="flex justify-center mb-6">
+        <TacticalView height={500} />
       </div>
 
       <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">

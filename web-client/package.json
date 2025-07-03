@@ -10,27 +10,29 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@pixi/react": "^7.1.0",
+    "@types/three": "^0.178.0",
+    "axios": "^1.5.0",
+    "pixi.js": "^7.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "pixi.js": "^7.3.0",
-    "@pixi/react": "^7.1.0",
-    "zustand": "^4.4.0",
     "react-router-dom": "^6.15.0",
-    "socket.io-client": "^4.7.0",
+    "socket.io-client": "^4.8.1",
+    "three": "^0.178.0",
     "zod": "^3.22.0",
-    "axios": "^1.5.0"
+    "zustand": "^4.4.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^13.4.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.0.3",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.5",
-    "vitest": "^0.34.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/jest-dom": "^6.0.0",
     "eslint": "^8.45.0",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.3"
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.5",
+    "vitest": "^0.34.0"
   }
 }

@@ -8,6 +8,8 @@ Tactical Operator combines tactical combat with persistent character progression
 
 ### Key Features
 
+- **✅ WebGL 3D Tactical View**: Three.js-powered top-down tactical combat view
+- **✅ Real-time Multiplayer**: Socket.IO integration with room management and live unit movement
 - **Tactical Combat**: Turn-based planning with real-time execution
 - **Persistent Characters**: RPG-style progression that survives sessions
 - **Guild System**: Collaborative economics and shared campaigns
@@ -141,7 +143,29 @@ npm start
 
 ## 🎮 Game Systems
 
-### Character System
+### ✅ Implemented Features
+
+#### WebGL 3D Tactical View
+- **Three.js Integration**: Complete 3D rendering system with orthographic top-down camera
+- **Tactical Renderer**: Scene management with lighting, units, and obstacles  
+- **Demo Scene**: Interactive tactical map with player (green), enemy (red), ally (blue) units and cover
+- **Camera Controls**: Mouse wheel zoom, optimized for tactical overview
+
+#### Real-time Multiplayer
+- **Socket.IO Integration**: Comprehensive real-time communication system
+- **Room Management**: Players can join/leave tactical sessions
+- **Live Unit Movement**: Real-time synchronization of unit positions between players
+- **Turn-based Support**: Framework for turn-based tactical gameplay
+- **Connection Status**: Visual indicators for network connectivity
+
+#### Development Ready
+- **TypeScript**: Full type safety across client, server, and shared packages
+- **Build System**: Vite for client, Node.js for server, concurrent development scripts
+- **Database**: PostgreSQL with Prisma ORM, Docker containerization support
+
+### 🔄 In Development
+
+#### Character System
 - **Classes**: Assault, Sniper, Medic, Engineer, Demolitions
 - **Stats**: Strength, Agility, Intelligence, Endurance, Marksmanship, Medical
 - **Progression**: Experience-based leveling with skill unlocks
