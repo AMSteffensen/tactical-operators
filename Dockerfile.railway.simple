@@ -23,6 +23,9 @@ RUN npm run build
 WORKDIR /app/api-server
 RUN npm run build
 
+# Generate Prisma client in build stage
+RUN npx prisma generate
+
 # Production setup
 FROM node:20-alpine AS production
 
@@ -38,9 +41,6 @@ COPY --from=base --chown=api-server:nodejs /app/api-server/package.json ./packag
 COPY --from=base --chown=api-server:nodejs /app/api-server/prisma ./prisma
 COPY --from=base --chown=api-server:nodejs /app/shared/dist ./shared/dist
 COPY --from=base --chown=api-server:nodejs /app/node_modules ./node_modules
-
-# Generate Prisma client for production
-RUN npx prisma generate
 
 # Switch to non-root user
 USER api-server
