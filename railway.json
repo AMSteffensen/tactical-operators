@@ -4,13 +4,12 @@
       "name": "tactical-operator-api",
       "source": {
         "type": "dockerfile",
-        "dockerfile": "Dockerfile.railway.simple"
+        "dockerfile": "Dockerfile.railway.ultra-simple"
       },
       "variables": {
         "NODE_ENV": "production",
         "PORT": "3001"
       },
-      "startCommand": "node dist/app.js",
       "domains": [
         {
           "domain": "tactical-operator-api.up.railway.app"

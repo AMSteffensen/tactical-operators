@@ -1,0 +1,21 @@
+# Ultra-simple Railway Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy everything
+COPY . .
+
+# Install dependencies
+RUN npm install
+
+# Build the application
+RUN cd shared && npm run build
+RUN cd api-server && npm run build
+RUN cd api-server && npx prisma generate
+
+# Set working directory to api-server
+WORKDIR /app/api-server
+
+# Start the application
+CMD ["node", "dist/app.js"]
