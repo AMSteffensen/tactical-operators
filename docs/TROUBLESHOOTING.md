@@ -6,6 +6,32 @@ Common issues and solutions when setting up Railway and Vercel for tactical-oper
 
 ## 🚂 Railway Issues
 
+### ❌ npm ci Lock File Sync Error
+
+**Symptoms**: Build fails with "npm ci can only install packages when your package.json and package-lock.json are in sync"
+
+**Root Cause**: Railway runs Docker build from project root but your workspace structure has dependencies in subdirectories
+
+**Solutions**:
+1. **Use Railway-specific Dockerfile** (implemented):
+   ```bash
+   # We created Dockerfile.railway that handles workspace structure
+   # Updated railway.json to use this from project root
+   ```
+
+2. **If still failing, regenerate lock files**:
+   ```bash
+   rm -f package-lock.json api-server/package-lock.json
+   npm install
+   git add . && git commit -m "Update lock files" && git push
+   ```
+
+3. **Alternative: Use simple Dockerfile**:
+   ```bash
+   # Switch railway.json to use Dockerfile.railway.simple
+   # This avoids complex workspace dependency resolution
+   ```
+
 ### ❌ API Service Won't Start
 
 **Symptoms**: Service shows "Failed" or "Crashed" status
