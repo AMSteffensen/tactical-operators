@@ -39,6 +39,9 @@ COPY --from=base --chown=api-server:nodejs /app/api-server/prisma ./prisma
 COPY --from=base --chown=api-server:nodejs /app/shared/dist ./shared/dist
 COPY --from=base --chown=api-server:nodejs /app/node_modules ./node_modules
 
+# Generate Prisma client for production
+RUN npx prisma generate
+
 # Switch to non-root user
 USER api-server
 
