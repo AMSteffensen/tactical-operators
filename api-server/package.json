@@ -6,6 +6,7 @@
     "dev:smart": "../scripts/api-start.sh",
     "build": "tsc",
     "start": "node -r tsconfig-paths/register dist/app.js",
+    "start:production": "node dist/app.js",
     "test": "vitest",
     "lint": "eslint . --ext .ts",
     "db:generate": "prisma generate",

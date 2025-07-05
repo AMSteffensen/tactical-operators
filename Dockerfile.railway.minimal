@@ -1,0 +1,38 @@
+# Minimal Railway Dockerfile - Copy pre-built application
+FROM node:20-alpine AS production
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 api-server
+
+# Copy package.json for dependencies
+COPY api-server/package.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Copy built application (build locally first)
+COPY api-server/dist ./dist
+COPY api-server/prisma ./prisma
+COPY shared/dist ./shared/dist
+
+# Generate Prisma client in production environment
+RUN npx prisma generate
+
+# Set ownership
+RUN chown -R api-server:nodejs /app
+
+# Switch to non-root user
+USER api-server
+
+# Expose port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+
+# Start application directly
+CMD ["node", "dist/app.js"]
