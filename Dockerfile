@@ -1,8 +1,8 @@
 # Railway Dockerfile - Fixed Prisma Schema Path Issue
 FROM node:20-alpine
 
-# Install curl for health checks
-RUN apk add --no-cache curl
+# Install curl for health checks and openssl for Prisma
+RUN apk add --no-cache curl openssl
 
 WORKDIR /app
 
@@ -16,7 +16,8 @@ COPY shared/ ./shared/
 COPY api-server/ ./api-server/
 
 # Install ALL dependencies (including dev dependencies for build)
-RUN npm ci
+# Skip postinstall scripts to avoid prisma generate before schema is available
+RUN npm ci --ignore-scripts
 
 # Build shared package first
 WORKDIR /app/shared
@@ -24,14 +25,15 @@ RUN npm run build
 
 # Build and setup API server
 WORKDIR /app/api-server
-RUN npm run build
 
-# Generate Prisma client AFTER source code is copied
+# Generate Prisma client now that schema is available
 RUN npx prisma generate --schema=./prisma/schema.prisma
 
-# Create a production start script that uses the correct working directory
-RUN echo '#!/bin/sh\ncd /app/api-server\nexec node dist/app.js' > /app/start-production.sh
-RUN chmod +x /app/start-production.sh
+# Build the API server
+RUN npm run build
+
+# Set working directory for production startup
+WORKDIR /app/api-server
 
 # Expose port
 EXPOSE 3001
@@ -40,5 +42,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 
-# Use our custom start script that ensures correct working directory
-CMD ["/app/start-production.sh"]
+# Start the application directly
+CMD ["node", "dist/app.js"]

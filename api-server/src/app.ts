@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
+import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
 
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
@@ -15,6 +16,9 @@ import { setupSocketHandlers } from './sockets/index.js';
 
 // Load environment variables
 dotenv.config();
+
+// Initialize Prisma client
+const prisma = new PrismaClient();
 
 const app = express();
 const server = createServer(app);
@@ -58,9 +62,55 @@ app.use(express.urlencoded({ extended: true }));
 // const csrfProtection = csrf({ cookie: { sameSite: 'strict', secure: process.env.NODE_ENV === 'production' } });
 // app.use(csrfProtection);
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+// Health check endpoint - Enhanced for monitoring and debugging
+app.get('/health', async (req, res) => {
+  try {
+    // Basic health status
+    const healthData = {
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      version: '0.1.0',
+      environment: process.env.NODE_ENV || 'development',
+      database: 'unknown',
+      memory: {
+        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+        external: Math.round(process.memoryUsage().external / 1024 / 1024)
+      }
+    };
+
+    // Test database connection
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      healthData.database = 'connected';
+    } catch (dbError) {
+      healthData.database = 'disconnected';
+      healthData.status = 'DEGRADED';
+    }
+
+    // Set appropriate status code
+    const statusCode = healthData.status === 'OK' ? 200 : 503;
+    res.status(statusCode).json(healthData);
+  } catch (error) {
+    res.status(503).json({
+      status: 'ERROR',
+      timestamp: new Date().toISOString(),
+      error: 'Health check failed'
+    });
+  }
+});
+
+// Test endpoint for staging environment verification
+app.get('/test/status', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Test endpoint operational',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    branch: process.env.RAILWAY_GIT_BRANCH || 'unknown',
+    commit: process.env.RAILWAY_GIT_COMMIT_SHA?.substring(0, 7) || 'unknown'
+  });
 });
 
 // Root endpoint - API info
@@ -71,6 +121,7 @@ app.get('/', (req, res) => {
     version: '0.1.0',
     endpoints: {
       health: '/health',
+      test: '/test/status',
       auth: {
         register: 'POST /api/auth/register',
         login: 'POST /api/auth/login'
