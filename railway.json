@@ -4,7 +4,7 @@
       "name": "tactical-operator-api",
       "source": {
         "type": "dockerfile",
-        "dockerfile": "Dockerfile.railway"
+        "dockerfile": "Dockerfile.railway.simple"
       },
       "variables": {
         "NODE_ENV": "production",
