@@ -1,4 +1,5 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
+import jwt from 'jsonwebtoken';
 import { GAME_EVENTS } from '@shared/constants';
 
 interface AuthenticatedSocket extends Socket {
@@ -21,22 +22,46 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
     console.log(`🔌 User connected: ${socket.id}`);
 
     // Authentication handler
-    socket.on('authenticate', (token: string) => {
-      // TODO: Validate JWT token and extract user ID
-      socket.userId = socket.id; // Temporary: use socket ID as user ID
-      console.log(`🔐 User authenticated: ${socket.userId}`);
-      socket.emit('authenticated', { userId: socket.userId });
+    socket.on('authenticate', async (token: string) => {
+      try {
+        if (!token) {
+          socket.emit('authenticationFailed', { error: 'No token provided' });
+          socket.disconnect();
+          return;
+        }
+
+        // Validate JWT token and extract user ID
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
+        socket.userId = decoded.id;
+        console.log(`🔐 User authenticated: ${socket.userId}`);
+        socket.emit('authenticated', { userId: socket.userId });
+      } catch (error) {
+        console.error('Socket authentication failed:', error);
+        socket.emit('authenticationFailed', { error: 'Invalid token' });
+        socket.disconnect();
+      }
     });
+
+    // Helper function to check authentication
+    const requireAuth = (callback: Function) => {
+      if (!socket.userId) {
+        socket.emit('error', 'Authentication required');
+        return false;
+      }
+      return true;
+    };
 
     // Room management handlers
     socket.on('createRoom', (campaignId: string) => {
+      if (!requireAuth(() => {})) return;
+
       const roomId = `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const room: GameRoom = {
         id: roomId,
-        players: new Set([socket.id]),
+        players: new Set([socket.userId!]),
         gameState: {
           units: {},
-          turn: socket.id,
+          turn: socket.userId,
           phase: 'setup'
         }
       };
@@ -45,11 +70,13 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       socket.join(roomId);
       socket.currentRoom = roomId;
       
-      console.log(`🏠 Room created: ${roomId} by ${socket.id}`);
+      console.log(`🏠 Room created: ${roomId} by ${socket.userId}`);
       socket.emit('roomCreated', roomId);
     });
 
     socket.on('joinRoom', (roomId: string) => {
+      if (!requireAuth(() => {})) return;
+
       const room = gameRooms.get(roomId);
       if (!room) {
         socket.emit('error', 'Room not found');
@@ -58,13 +85,13 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
 
       socket.join(roomId);
       socket.currentRoom = roomId;
-      room.players.add(socket.id);
+      room.players.add(socket.userId!);
 
-      console.log(`👥 User ${socket.id} joined room ${roomId}`);
+      console.log(`👥 User ${socket.userId} joined room ${roomId}`);
       
       // Notify others in the room
       socket.to(roomId).emit('playerJoined', { 
-        playerId: socket.id,
+        playerId: socket.userId,
         userId: socket.userId 
       });
       
