@@ -32,9 +32,8 @@ RUN npx prisma generate --schema=./prisma/schema.prisma
 # Build the API server
 RUN npm run build
 
-# Create a production start script that uses the correct working directory
-RUN echo '#!/bin/sh\ncd /app/api-server\nexec node dist/app.js' > /app/start-production.sh
-RUN chmod +x /app/start-production.sh
+# Set working directory for production startup
+WORKDIR /app/api-server
 
 # Expose port
 EXPOSE 3001
@@ -43,5 +42,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 
-# Use our custom start script that ensures correct working directory
-CMD ["/app/start-production.sh"]
+# Start the application directly
+CMD ["node", "dist/app.js"]
