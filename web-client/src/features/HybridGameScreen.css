@@ -1,0 +1,314 @@
+/* Hybrid Game Screen Styles */
+.hybrid-game-screen {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #0a0a0a;
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Game Mode Indicator */
+.game-mode-indicator {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mode-badge {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  border: 2px solid;
+  backdrop-filter: blur(10px);
+}
+
+.mode-badge.strategic {
+  background: rgba(34, 139, 34, 0.9);
+  border-color: #228B22;
+}
+
+.mode-badge.tactical {
+  background: rgba(220, 20, 60, 0.9);
+  border-color: #DC143C;
+}
+
+.mode-badge.transition {
+  background: rgba(255, 140, 0, 0.9);
+  border-color: #FF8C00;
+  animation: pulse 1.5s infinite;
+}
+
+.strategic-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.control-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #777;
+}
+
+/* Strategic Mode */
+.strategic-mode {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+/* Tactical Mode */
+.tactical-mode {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.tactical-view-fullscreen {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Transition Mode */
+.transition-mode {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.transition-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(20, 20, 30, 0.9));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.transition-content {
+  text-align: center;
+  color: white;
+  padding: 3rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #333;
+}
+
+.loading-spinner {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  animation: spin 2s linear infinite;
+}
+
+.transition-content h2 {
+  margin: 0 0 1rem 0;
+  font-size: 2rem;
+  color: #FFD700;
+}
+
+.transition-content p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #ccc;
+}
+
+/* Exit Confirmation */
+.exit-confirm-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+
+.exit-confirm-dialog {
+  background: #1a1a1a;
+  border: 2px solid #333;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  color: white;
+  min-width: 300px;
+}
+
+.exit-confirm-dialog h3 {
+  margin: 0 0 1rem 0;
+  color: #ff6b6b;
+  font-size: 1.5rem;
+}
+
+.exit-confirm-dialog p {
+  margin: 0 0 2rem 0;
+  color: #ccc;
+  line-height: 1.5;
+}
+
+.exit-confirm-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.btn-exit {
+  padding: 0.75rem 1.5rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-exit:hover {
+  background: #c82333;
+}
+
+.btn-cancel {
+  padding: 0.75rem 1.5rem;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #5a6268;
+}
+
+/* Game Log Overlay */
+.game-log-overlay {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 300px;
+  max-height: 200px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+}
+
+.log-header {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #333;
+  font-weight: 600;
+  color: #FFD700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.log-entries {
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.log-entry {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  color: #ccc;
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.7; 
+    transform: scale(1.05);
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .game-mode-indicator {
+    top: 10px;
+    left: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .mode-badge {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .game-log-overlay {
+    bottom: 10px;
+    right: 10px;
+    width: calc(100vw - 20px);
+    max-width: 300px;
+  }
+  
+  .exit-confirm-dialog {
+    margin: 1rem;
+    min-width: auto;
+    width: calc(100vw - 2rem);
+    max-width: 400px;
+  }
+  
+  .exit-confirm-buttons {
+    flex-direction: column;
+  }
+}
+
+/* Performance optimizations */
+.hybrid-game-screen * {
+  box-sizing: border-box;
+}
+
+.hybrid-game-screen .tactical-mode,
+.hybrid-game-screen .strategic-mode {
+  will-change: transform;
+  transform: translateZ(0);
+}

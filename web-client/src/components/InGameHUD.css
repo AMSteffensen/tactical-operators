@@ -1,0 +1,459 @@
+/* In-Game HUD - JRPG Style Turn-Based Interface */
+.in-game-hud {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.85) 70%,
+    rgba(0, 0, 0, 0.4) 90%,
+    transparent 100%
+  );
+  backdrop-filter: blur(10px);
+  border-top: 2px solid rgba(76, 175, 80, 0.6);
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: grid;
+  grid-template-columns: 300px 1fr 250px;
+  grid-template-areas: "status actions log";
+  gap: 20px;
+  padding: 20px;
+  min-height: 180px;
+  animation: slideUpIn 0.5s ease-out;
+}
+
+@keyframes slideUpIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Unit Status Panel */
+.unit-status-panel {
+  grid-area: status;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(76, 175, 80, 0.6);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.unit-portrait {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.portrait-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.unit-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #4CAF50;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.unit-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.stat-bar-container {
+  position: relative;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+  border-radius: 7px;
+}
+
+.stat-bar-fill.health {
+  background: linear-gradient(90deg, #f44336 0%, #FF5722 50%, #4CAF50 100%);
+}
+
+.stat-bar-fill.action-points {
+  background: linear-gradient(90deg, #2196F3, #03A9F4);
+}
+
+.stat-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  line-height: 1;
+}
+
+.turn-timer {
+  background: rgba(255, 152, 0, 0.2);
+  border: 1px solid rgba(255, 152, 0, 0.5);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+
+.timer-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.timer-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #FF9800;
+  transition: color 0.3s ease;
+}
+
+.timer-value.warning {
+  color: #f44336;
+  animation: timerPulse 1s infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Action Menu */
+.action-menu {
+  grid-area: actions;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.action-menu-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #4CAF50;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 12px;
+  flex: 1;
+}
+
+.action-button {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 12px 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 70px;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-button:hover:not(:disabled) {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.action-button.selected {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.3);
+  box-shadow: 0 0 16px rgba(76, 175, 80, 0.5);
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: rgba(244, 67, 54, 0.5);
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.action-icon {
+  font-size: 1.8rem;
+  margin-bottom: 2px;
+}
+
+.action-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1;
+}
+
+.action-cost {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.action-instruction {
+  background: rgba(33, 150, 243, 0.2);
+  border: 1px solid rgba(33, 150, 243, 0.5);
+  border-radius: 6px;
+  padding: 8px 12px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #64B5F6;
+  animation: instructionFadeIn 0.3s ease-out;
+}
+
+@keyframes instructionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Combat Log Mini */
+.combat-log-mini {
+  grid-area: log;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.log-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding-bottom: 8px;
+}
+
+.log-entries {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-entry {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 4px 8px;
+  border-radius: 4px;
+  line-height: 1.3;
+}
+
+.log-entry.recent {
+  color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+  border-left: 3px solid #4CAF50;
+  animation: logEntryFlash 0.5s ease-out;
+}
+
+@keyframes logEntryFlash {
+  0% {
+    background: rgba(76, 175, 80, 0.4);
+  }
+  100% {
+    background: rgba(76, 175, 80, 0.1);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .in-game-hud {
+    grid-template-columns: 250px 1fr 200px;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .action-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  
+  .action-button {
+    min-height: 60px;
+    padding: 8px 6px;
+  }
+  
+  .action-icon {
+    font-size: 1.5rem;
+  }
+  
+  .action-name {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .in-game-hud {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas: 
+      "status"
+      "actions"
+      "log";
+    gap: 12px;
+    padding: 12px;
+    min-height: auto;
+  }
+  
+  .unit-status-panel {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .unit-portrait {
+    margin-bottom: 0;
+  }
+  
+  .unit-stats {
+    flex: 1;
+  }
+  
+  .turn-timer {
+    min-width: 80px;
+  }
+  
+  .action-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+  }
+  
+  .combat-log-mini {
+    max-height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .action-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+  }
+  
+  .action-button {
+    min-height: 50px;
+  }
+  
+  .action-icon {
+    font-size: 1.2rem;
+  }
+  
+  .action-name {
+    font-size: 0.7rem;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .in-game-hud {
+    background: rgba(0, 0, 0, 0.95);
+    border-top-color: #4CAF50;
+  }
+  
+  .unit-status-panel,
+  .combat-log-mini {
+    border-color: #4CAF50;
+    background: rgba(0, 0, 0, 0.9);
+  }
+  
+  .action-button {
+    border-color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .action-button:hover:not(:disabled) {
+    border-color: #4CAF50;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .in-game-hud {
+    animation: none;
+  }
+  
+  .action-button:hover:not(:disabled) {
+    transform: none;
+  }
+  
+  .timer-value.warning {
+    animation: none;
+  }
+  
+  .action-instruction {
+    animation: none;
+  }
+  
+  .log-entry.recent {
+    animation: none;
+  }
+}

@@ -159,3 +159,124 @@ export const ERROR_MESSAGES = {
   SERVER_ERROR: 'Internal server error',
   NOT_FOUND: 'Resource not found',
 } as const;
+
+// Combat System Constants
+export const COMBAT_CONFIG = {
+  // Action Points
+  DEFAULT_ACTION_POINTS: 6,
+  MOVEMENT_COST_PER_UNIT: 1,
+  BASIC_ATTACK_COST: 2,
+  HEAVY_ATTACK_COST: 4,
+  ABILITY_COST_RANGE: [2, 6],
+  
+  // Turn Management
+  TURN_TIME_LIMIT: 60, // seconds
+  COMBAT_ROUND_LIMIT: 20,
+  
+  // Combat Mechanics
+  BASE_HIT_CHANCE: 70,
+  COVER_DEFENSE_BONUS: 20,
+  FLANKING_ATTACK_BONUS: 15,
+  CRITICAL_HIT_CHANCE: 10,
+  CRITICAL_DAMAGE_MULTIPLIER: 1.5,
+  
+  // Damage and Health
+  MIN_DAMAGE: 1,
+  ARMOR_DAMAGE_REDUCTION: 0.1, // 10% per armor point
+  WOUNDED_THRESHOLD: 0.3, // 30% health
+  UNCONSCIOUS_THRESHOLD: 0.1, // 10% health
+  
+  // Movement and Range
+  BASE_MOVEMENT_RANGE: 4,
+  BASE_ATTACK_RANGE: 6,
+  MELEE_RANGE: 1.5,
+  SNIPER_RANGE_MULTIPLIER: 2,
+  
+  // Status Effects
+  SUPPRESSION_ACCURACY_PENALTY: 25,
+  STUN_DURATION: 1, // turns
+  BLEED_DAMAGE_PER_TURN: 5,
+  
+  // Experience and Progression
+  KILL_EXPERIENCE: 100,
+  ASSIST_EXPERIENCE: 25,
+  SURVIVAL_EXPERIENCE: 50,
+  OBJECTIVE_EXPERIENCE: 150
+} as const;
+
+// Class-specific combat modifiers
+export const CLASS_COMBAT_MODIFIERS = {
+  assault: {
+    accuracy: 0,
+    damage: 5,
+    range: 0,
+    mobility: 1,
+    defense: 2,
+    actionPoints: 6,
+    specialties: ['suppressing_fire', 'breach_and_clear']
+  },
+  sniper: {
+    accuracy: 15,
+    damage: 10,
+    range: 8,
+    mobility: -1,
+    defense: -1,
+    actionPoints: 5,
+    specialties: ['precision_shot', 'overwatch']
+  },
+  medic: {
+    accuracy: -5,
+    damage: -5,
+    range: 0,
+    mobility: 0,
+    defense: 1,
+    actionPoints: 7,
+    specialties: ['heal', 'stabilize', 'combat_stims']
+  },
+  engineer: {
+    accuracy: 0,
+    damage: 0,
+    range: 2,
+    mobility: 0,
+    defense: 3,
+    actionPoints: 6,
+    specialties: ['repair', 'explosive_device', 'fortify']
+  },
+  demolitions: {
+    accuracy: -5,
+    damage: 15,
+    range: 4,
+    mobility: -2,
+    defense: 1,
+    actionPoints: 5,
+    specialties: ['explosive_shot', 'area_damage', 'breach_charge']
+  }
+} as const;
+
+// Damage type effectiveness chart
+export const DAMAGE_EFFECTIVENESS = {
+  physical: {
+    vs_armor: 0.8,
+    vs_cover: 0.6
+  },
+  ballistic: {
+    vs_armor: 1.0,
+    vs_cover: 0.8
+  },
+  explosive: {
+    vs_armor: 1.2,
+    vs_cover: 1.5,
+    area_effect: true,
+    radius: 2
+  },
+  energy: {
+    vs_armor: 1.3,
+    vs_cover: 1.0,
+    ignores_cover: true
+  },
+  medical: {
+    vs_armor: 0,
+    vs_cover: 0,
+    healing: true
+  }
+} as const;

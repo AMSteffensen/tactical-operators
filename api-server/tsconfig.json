@@ -21,7 +21,7 @@
       "@/controllers/*": ["./src/controllers/*"],
       "@/middleware/*": ["./src/middleware/*"],
       "@/config/*": ["./src/config/*"],
-      "@shared/*": ["../shared/*"]
+      "@shared/*": ["../shared/dist/*"]
     }
   },
   "include": ["src/**/*"],

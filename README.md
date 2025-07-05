@@ -10,6 +10,7 @@ Tactical Operator combines tactical combat with persistent character progression
 
 - **✅ WebGL 3D Tactical View**: Three.js-powered top-down tactical combat view
 - **✅ Real-time Multiplayer**: Socket.IO integration with room management and live unit movement
+- **✅ Distraction-Free Game Screens**: Squad Selection → Deployment → Full-Screen Gameplay flow
 - **Tactical Combat**: Turn-based planning with real-time execution
 - **Persistent Characters**: RPG-style progression that survives sessions
 - **Guild System**: Collaborative economics and shared campaigns
@@ -27,6 +28,30 @@ tactical-operator/
 └── tests/               # Test suites for all components
 ```
 
+## 🚀 Deployment
+
+Your tactical-operator game has a complete CI/CD pipeline ready for free hosting platforms!
+
+### Quick Deploy
+```bash
+# Check if ready for deployment
+npm run deploy:check
+
+# Deploy to production (Railway + Vercel + Expo)
+npm run deploy
+```
+
+### Hosting Platforms (FREE)
+- **🚂 Railway**: API server + PostgreSQL database
+- **🌐 Vercel**: Web client hosting  
+- **📱 Expo EAS**: Mobile app builds
+- **🔄 GitHub Actions**: Automated CI/CD
+
+### Setup Instructions
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for detailed deployment setup and [`docs/CI_CD_COMPLETION.md`](docs/CI_CD_COMPLETION.md) for what's already configured.
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -34,6 +59,7 @@ tactical-operator/
 - Node.js 18+ and npm 8+
 - PostgreSQL 14+ OR Docker (recommended for database)
 - Git
+- Make (available on macOS/Linux, install via tools on Windows)
 
 ### Installation
 
@@ -45,8 +71,36 @@ tactical-operator/
 
 2. **Install dependencies**
    ```bash
+   # Using Makefile (recommended)
+   make install
+   
+   # Or using npm
    npm run install-all
    ```
+
+3. **Quick development start**
+   ```bash
+   # Start database + development servers
+   make quick-start
+   
+   # Or manually
+   make docker-db
+   make dev
+   ```
+
+### 🛠️ Makefile Commands
+
+The project includes a comprehensive Makefile for standardized operations:
+
+```bash
+make help           # Show all available commands
+make quick-start    # Start database + development servers  
+make quick-build    # Build and test all packages
+make quick-check    # Type check + lint all packages
+make status         # Check project health
+```
+
+See [`docs/MAKEFILE_GUIDE.md`](docs/MAKEFILE_GUIDE.md) for complete command reference.
 
 3. **Set up the database (Choose one option)**
 
@@ -81,25 +135,52 @@ tactical-operator/
 
 5. **Start the development servers**
    
-   **Option A: Concurrent Development (Recommended)**
+   **Option A: PM2 Process Management (Recommended)**
    ```bash
-   # Start both API server and web client together
+   # Start all services with PM2 (automatic restarts, centralized logging)
    npm run dev
+   
+   # Check status
+   npm run dev:status
+   
+   # View logs
+   npm run dev:logs
+   
+   # Stop services
+   npm run stop
    ```
    
-   **Option B: Separate Terminals**
+   **Option B: Smart Development (Alternative)**
    ```bash
-   # Terminal 1 - API Server
+   # Start with automatic port conflict resolution
+   npm run dev:traditional
+   ```
+   This uses the smart API starter that automatically handles port conflicts.
+   
+   **Option C: Individual Services**
+   ```bash
+   # API Server with smart port management
+   npm run dev:api:smart
+   
+   # API Server (traditional)
    npm run dev:api
    
-   # Terminal 2 - Web Client  
+   # Web Client  
    npm run dev:web
    ```
 
 This will start:
-- Web client on http://localhost:3000
-- API server on http://localhost:3001
+- Web client on http://localhost:3000 (or next available port)
+- API server on http://localhost:3001 (or next available port)
 - Database on localhost:5432 (if using Docker)
+
+### Port Conflict Resolution
+
+The smart API starter (`scripts/api-start.sh`) automatically handles port conflicts by:
+- Detecting if the preferred port (3001) is in use
+- Offering to kill existing processes or find alternative ports
+- Updating environment configuration automatically
+- Providing graceful shutdown handling
 
 ### Alternative Development Commands
 
@@ -157,6 +238,13 @@ npm start
 - **Live Unit Movement**: Real-time synchronization of unit positions between players
 - **Turn-based Support**: Framework for turn-based tactical gameplay
 - **Connection Status**: Visual indicators for network connectivity
+
+#### Distraction-Free Game Screens
+- **Squad Selection Screen**: Full-screen character selection with up to 4 squad members
+- **Deployment Screen**: Tactical grid-based positioning interface (4x3 grid)
+- **Gameplay Screen**: 100% width canvas with zero UI distractions during tactical combat
+- **ESC Pause Menu**: Minimal interruption system for fullscreen control
+- **Progressive Flow**: Clean separation between selection, deployment, and execution phases
 
 #### Development Ready
 - **TypeScript**: Full type safety across client, server, and shared packages
@@ -232,8 +320,15 @@ shared/
 ### Available Scripts
 
 ```bash
-# Development
-npm run dev              # Start all dev servers
+# Development with PM2 (Recommended)
+npm run dev              # Start all services with PM2
+npm run dev:status       # Check PM2 process status
+npm run dev:logs         # View all service logs
+npm run stop             # Stop all services
+npm run restart          # Restart all services
+
+# Traditional Development
+npm run dev:traditional  # Start with concurrently
 npm run dev:web          # Start web client only
 npm run dev:api          # Start API server only
 npm run dev:mobile       # Start mobile app
@@ -296,6 +391,33 @@ The React Native app provides:
 - **Guild Interface**: Bank access, member communication
 - **Session Joining**: Room codes for quick campaign access
 - **Offline Mode**: View character data without internet
+
+### 📱 Mobile-First Design
+
+Tactical Operator features a responsive, mobile-first interface that adapts to any screen size:
+
+- **Touch-Optimized Controls**: Large, accessible action buttons designed for mobile interaction
+- **Full-Screen Gameplay**: Game canvas utilizes the entire viewport on mobile devices
+- **Responsive Layout**: UI automatically adapts from mobile (320px) to desktop (1200px+)
+- **Gesture Support**: Touch-friendly Three.js tactical view with pinch-zoom and tap controls
+- **Collapsible Panels**: Character selection and stats panels slide in from screen edges
+
+#### Mobile Features
+- **Top HUD**: Game status and squad information always visible
+- **Bottom Action Bar**: Context-sensitive controls (Move, Attack, Defend, etc.)
+- **Side Panels**: Character selection and mission stats accessible via panel toggles
+- **Responsive Grid**: Action buttons adapt from 4 columns (mobile) to 8 columns (desktop)
+
+#### Testing Mobile Interface
+```bash
+# Start mobile UI demo
+./scripts/demo-mobile-ui.sh
+
+# Or manually test at:
+npm run dev
+# Navigate to http://localhost:3000/game
+# Use browser dev tools device emulation for best mobile experience
+```
 
 ## 🔧 Configuration
 

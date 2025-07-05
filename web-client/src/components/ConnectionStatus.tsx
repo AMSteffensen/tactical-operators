@@ -16,11 +16,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 }) => {
   const { status } = useSocket();
   
-  const getStatusColor = () => {
-    if (status.isConnected) return 'green';
-    if (status.error) return 'red';
-    return 'orange';
-  };
+  
   
   const getStatusText = () => {
     if (status.isConnected) return 'Connected';
@@ -67,54 +63,7 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
         </div>
       )}
       
-      <style jsx>{`
-        .connection-status {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .status-main {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
-          color: #fff;
-        }
-        
-        .status-icon {
-          font-size: 10px;
-        }
-        
-        .status-text {
-          font-weight: 500;
-        }
-        
-        .status-details {
-          margin-top: 4px;
-          font-size: 11px;
-          color: #ccc;
-        }
-        
-        .detail-item {
-          display: flex;
-          gap: 4px;
-          margin-bottom: 2px;
-        }
-        
-        .detail-item.error {
-          color: #ff6b6b;
-        }
-        
-        .detail-label {
-          font-weight: 500;
-        }
-        
-        .detail-value {
-          font-family: monospace;
-        }
-      `}</style>
+      import './ConnectionStatus.css';
     </div>
   );
 };

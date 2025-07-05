@@ -1,0 +1,71 @@
+{
+  "apps": [
+    {
+      "name": "tactical-database",
+      "script": "docker-compose",
+      "args": "-f docker-compose.dev.yml up postgres",
+      "cwd": "/Users/andreassteffensen/dev/tactical-operator",
+      "instances": 1,
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "log_file": "./logs/database.log",
+      "out_file": "./logs/database-out.log",
+      "error_file": "./logs/database-error.log"
+    },
+    {
+      "name": "tactical-api",
+      "script": "npm",
+      "args": "run dev:smart",
+      "cwd": "/Users/andreassteffensen/dev/tactical-operator/api-server",
+      "instances": 1,
+      "autorestart": true,
+      "watch": ["src"],
+      "ignore_watch": ["node_modules", "dist", "logs"],
+      "max_memory_restart": "500M",
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": "3001"
+      },
+      "log_file": "./logs/api.log",
+      "out_file": "./logs/api-out.log",
+      "error_file": "./logs/api-error.log"
+    },
+    {
+      "name": "tactical-web",
+      "script": "npm",
+      "args": "run dev",
+      "cwd": "/Users/andreassteffensen/dev/tactical-operator/web-client",
+      "instances": 1,
+      "autorestart": true,
+      "watch": false,
+      "max_memory_restart": "1G",
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": "3000"
+      },
+      "log_file": "./logs/web.log",
+      "out_file": "./logs/web-out.log",
+      "error_file": "./logs/web-error.log"
+    },
+    {
+      "name": "tactical-mobile",
+      "script": "npm",
+      "args": "start",
+      "cwd": "/Users/andreassteffensen/dev/tactical-operator/mobile-app",
+      "instances": 1,
+      "autorestart": false,
+      "watch": false,
+      "max_memory_restart": "800M",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "log_file": "./logs/mobile.log",
+      "out_file": "./logs/mobile-out.log",
+      "error_file": "./logs/mobile-error.log"
+    }
+  ]
+}

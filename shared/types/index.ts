@@ -149,3 +149,103 @@ export const RoomEventSchema = z.object({
   event: SocketEventSchema,
 });
 export type RoomEvent = z.infer<typeof RoomEventSchema>;
+
+// Combat System Types
+export const CombatActionTypeSchema = z.enum(['move', 'attack', 'ability', 'item', 'defend', 'wait']);
+export type CombatActionType = z.infer<typeof CombatActionTypeSchema>;
+
+export const CombatTargetTypeSchema = z.enum(['unit', 'ground', 'area', 'self']);
+export type CombatTargetType = z.infer<typeof CombatTargetTypeSchema>;
+
+export const DamageTypeSchema = z.enum(['physical', 'ballistic', 'explosive', 'energy', 'medical']);
+export type DamageType = z.infer<typeof DamageTypeSchema>;
+
+export const CombatStatusSchema = z.enum(['healthy', 'wounded', 'suppressed', 'stunned', 'unconscious', 'dead']);
+export type CombatStatus = z.infer<typeof CombatStatusSchema>;
+
+export const CombatActionSchema = z.object({
+  id: z.string(),
+  type: CombatActionTypeSchema,
+  actorId: z.string(),
+  targetType: CombatTargetTypeSchema,
+  targetId: z.string().optional(),
+  targetPosition: z.object({
+    x: z.number(),
+    y: z.number(),
+    z: z.number()
+  }).optional(),
+  actionPointCost: z.number().min(0).max(10),
+  damage: z.number().optional(),
+  damageType: DamageTypeSchema.optional(),
+  effects: z.array(z.string()).optional(),
+  timestamp: z.date()
+});
+export type CombatAction = z.infer<typeof CombatActionSchema>;
+
+export const CombatUnitSchema = z.object({
+  id: z.string(),
+  characterId: z.string(),
+  name: z.string(),
+  class: CharacterClassSchema,
+  position: z.object({
+    x: z.number(),
+    y: z.number(),
+    z: z.number()
+  }),
+  health: z.number().min(0),
+  maxHealth: z.number().min(1),
+  armor: z.number().min(0).default(0),
+  actionPoints: z.number().min(0).max(10),
+  maxActionPoints: z.number().min(1).max(10),
+  status: CombatStatusSchema,
+  statusEffects: z.array(z.string()).default([]),
+  faction: z.enum(['player', 'enemy', 'neutral']),
+  hasActed: z.boolean().default(false),
+  initiative: z.number(),
+  // Combat stats derived from character stats
+  combatStats: z.object({
+    accuracy: z.number().min(0).max(100),
+    damage: z.number().min(0),
+    range: z.number().min(1),
+    mobility: z.number().min(1),
+    defense: z.number().min(0)
+  })
+});
+export type CombatUnit = z.infer<typeof CombatUnitSchema>;
+
+export const CombatTurnSchema = z.object({
+  turnNumber: z.number().min(1),
+  phase: z.enum(['movement', 'action', 'reaction', 'end']),
+  activeUnitId: z.string(),
+  remainingActionPoints: z.number().min(0),
+  actionsThisTurn: z.array(CombatActionSchema),
+  turnStartTime: z.date(),
+  timeLimit: z.number().optional() // seconds
+});
+export type CombatTurn = z.infer<typeof CombatTurnSchema>;
+
+export const CombatStateSchema = z.object({
+  combatId: z.string(),
+  campaignId: z.string().optional(),
+  status: z.enum(['setup', 'active', 'paused', 'completed']),
+  currentTurn: CombatTurnSchema,
+  units: z.array(CombatUnitSchema),
+  turnOrder: z.array(z.string()), // unit IDs in initiative order
+  battlefield: z.object({
+    width: z.number(),
+    height: z.number(),
+    terrain: z.array(z.object({
+      position: z.object({ x: z.number(), z: z.number() }),
+      type: z.enum(['normal', 'cover', 'difficult', 'impassable']),
+      coverValue: z.number().min(0).max(100).optional()
+    }))
+  }),
+  victory: z.object({
+    conditions: z.array(z.enum(['eliminate_enemies', 'reach_objective', 'survive_turns', 'protect_unit'])),
+    status: z.enum(['ongoing', 'player_victory', 'enemy_victory', 'draw']).optional()
+  }),
+  actionHistory: z.array(CombatActionSchema),
+  createdAt: z.date(),
+  updatedAt: z.date()
+});
+export type CombatState = z.infer<typeof CombatStateSchema>;

@@ -1,0 +1,35 @@
+{
+  "services": [
+    {
+      "name": "tactical-operator-api",
+      "source": {
+        "type": "dockerfile",
+        "dockerfile": "Dockerfile.railway"
+      },
+      "variables": {
+        "NODE_ENV": "production",
+        "PORT": "3001"
+      },
+      "domains": [
+        {
+          "domain": "tactical-operator-api.up.railway.app"
+        }
+      ],
+      "healthcheckPath": "/health",
+      "healthcheckTimeout": 30,
+      "restartPolicyType": "on-failure",
+      "restartPolicyMaxRetries": 3
+    },
+    {
+      "name": "tactical-operator-db",
+      "source": {
+        "type": "postgresql",
+        "version": "15"
+      },
+      "variables": {
+        "POSTGRES_DB": "tactical_operator",
+        "POSTGRES_USER": "tactical_user"
+      }
+    }
+  ]
+}

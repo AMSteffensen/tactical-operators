@@ -1,0 +1,47 @@
+{
+  "version": 2,
+  "name": "tactical-operator-web",
+  "builds": [
+    {
+      "src": "web-client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "$API_URL/api/$1"
+    },
+    {
+      "src": "/socket.io/(.*)",
+      "dest": "$SOCKET_URL/socket.io/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/web-client/dist/$1"
+    }
+  ],
+  "env": {
+    "VITE_API_URL": "@vite_api_url",
+    "VITE_SOCKET_URL": "@vite_socket_url"
+  },
+  "build": {
+    "env": {
+      "VITE_API_URL": "@vite_api_url",
+      "VITE_SOCKET_URL": "@vite_socket_url"
+    }
+  },
+  "functions": {
+    "web-client/dist/**": {
+      "headers": {
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-Content-Type-Options": "nosniff",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      }
+    }
+  }
+}

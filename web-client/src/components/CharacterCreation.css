@@ -1,0 +1,339 @@
+/* CharacterCreation.css - Styles for character creation form */
+
+.character-creation {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  background: #2a2a2a;
+  border-radius: 12px;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.character-creation-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.character-creation-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  color: #fff;
+}
+
+.character-creation-header p {
+  margin: 0;
+  color: #ccc;
+  font-size: 16px;
+}
+
+.character-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Form Sections */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-label {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  padding: 12px 16px;
+  background: #1a1a1a;
+  border: 2px solid #444;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #00ff00;
+}
+
+/* Class Selection */
+.class-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.class-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #1a1a1a;
+  border: 2px solid #444;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.class-option:hover {
+  border-color: #666;
+  background: #222;
+}
+
+.class-option.selected {
+  border-color: #00ff00;
+  background: #1a2a1a;
+}
+
+.class-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+  color: white;
+}
+
+.class-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  color: #fff;
+}
+
+.class-info p {
+  margin: 0;
+  font-size: 12px;
+  color: #ccc;
+  line-height: 1.4;
+}
+
+/* Class Details */
+.class-details {
+  padding: 16px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  border: 2px solid #444;
+}
+
+.class-badge {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+}
+
+.starting-skills {
+  margin-top: 12px;
+}
+
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.skill-tag {
+  padding: 4px 8px;
+  background: #333;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #ccc;
+  text-transform: capitalize;
+}
+
+/* Stats Section */
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.points-remaining {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.points-remaining strong {
+  color: #00ff00;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.stat-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-button {
+  width: 32px;
+  height: 32px;
+  background: #444;
+  border: 1px solid #666;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.stat-button:hover:not(:disabled) {
+  background: #555;
+}
+
+.stat-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stat-input {
+  width: 60px;
+  text-align: center;
+  padding: 6px;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: white;
+  font-size: 14px;
+}
+
+.stat-bar {
+  width: 100%;
+  height: 6px;
+  background: #333;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stat-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff4444 0%, #ffaa00 50%, #00ff00 100%);
+  transition: width 0.2s;
+}
+
+.reset-stats-button {
+  align-self: flex-start;
+  padding: 8px 16px;
+  background: #444;
+  border: 1px solid #666;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.reset-stats-button:hover {
+  background: #555;
+}
+
+/* Error Message */
+.error-message {
+  padding: 12px 16px;
+  background: #440000;
+  border: 1px solid #ff4444;
+  border-radius: 8px;
+  color: #ff9999;
+  font-size: 14px;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #444;
+}
+
+.cancel-button {
+  padding: 12px 24px;
+  background: transparent;
+  border: 2px solid #666;
+  border-radius: 8px;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.cancel-button:hover:not(:disabled) {
+  border-color: #888;
+  color: #fff;
+}
+
+.create-button {
+  padding: 12px 24px;
+  background: #00aa00;
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.create-button:hover:not(:disabled) {
+  background: #00cc00;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+}
+
+.create-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .character-creation {
+    margin: 16px;
+    padding: 16px;
+  }
+  
+  .class-selection {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .cancel-button,
+  .create-button {
+    width: 100%;
+  }
+}

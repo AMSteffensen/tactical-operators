@@ -1,0 +1,293 @@
+/* Strategic View Styles */
+.strategic-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.strategic-canvas {
+  flex: 1;
+  height: 100%;
+  background: #0a0a0a;
+  cursor: crosshair;
+}
+
+/* Strategic UI Panel */
+.strategic-ui {
+  position: absolute;
+  top: 80px;
+  left: 20px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  pointer-events: none;
+}
+
+.strategic-ui > * {
+  pointer-events: auto;
+}
+
+/* Resource Panel */
+.resource-panel {
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.resource-panel h3 {
+  margin: 0 0 1rem 0;
+  color: #FFD700;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.5rem;
+}
+
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.resource-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid #444;
+}
+
+.resource-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.resource-value {
+  font-weight: 600;
+  color: #4CAF50;
+  font-size: 1rem;
+}
+
+/* Army Panel */
+.army-panel {
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.army-panel h3 {
+  margin: 0 0 1rem 0;
+  color: #FFD700;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.5rem;
+}
+
+.army-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.army-item {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #444;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.army-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #666;
+}
+
+.army-item.selected {
+  border-color: #FFD700;
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.army-item.engaged {
+  border-color: #ff4444;
+  background: rgba(255, 68, 68, 0.1);
+}
+
+.army-item.retreating {
+  border-color: #ff8800;
+  background: rgba(255, 136, 0, 0.1);
+}
+
+.army-name {
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.army-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.squad-count {
+  font-size: 0.8rem;
+  color: #4CAF50;
+}
+
+.army-status {
+  font-size: 0.8rem;
+  color: #ccc;
+  text-transform: capitalize;
+}
+
+.army-supplies {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+/* Instructions Panel */
+.instructions-panel {
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.instructions-panel h4 {
+  margin: 0 0 0.75rem 0;
+  color: #FFD700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.instructions-panel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.instructions-panel li {
+  padding: 0.25rem 0;
+  font-size: 0.85rem;
+  color: #ccc;
+  line-height: 1.4;
+  position: relative;
+  padding-left: 1rem;
+}
+
+.instructions-panel li::before {
+  content: '•';
+  color: #4CAF50;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+/* Scrollbar Styling */
+.army-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.army-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.army-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.army-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .strategic-ui {
+    width: 250px;
+  }
+  
+  .resource-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .army-list {
+    max-height: 150px;
+  }
+}
+
+@media (max-width: 768px) {
+  .strategic-ui {
+    position: fixed;
+    top: auto;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    width: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 0.75rem;
+  }
+  
+  .strategic-ui > * {
+    min-width: 200px;
+    flex-shrink: 0;
+  }
+  
+  .resource-panel,
+  .army-panel,
+  .instructions-panel {
+    padding: 0.75rem;
+  }
+  
+  .resource-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+  
+  .resource-item {
+    padding: 0.25rem;
+  }
+  
+  .resource-icon {
+    font-size: 1.2rem;
+  }
+  
+  .army-list {
+    max-height: 120px;
+  }
+  
+  .instructions-panel {
+    display: none; /* Hide on mobile to save space */
+  }
+}
+
+/* Performance optimizations */
+.strategic-view * {
+  box-sizing: border-box;
+}
+
+.strategic-canvas {
+  will-change: transform;
+  transform: translateZ(0);
+}

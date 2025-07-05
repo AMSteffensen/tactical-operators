@@ -1,6 +1,7 @@
 {
   "name": "shared",
   "version": "0.1.0",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -13,8 +14,9 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.15.4",
+    "eslint": "^8.45.0",
     "typescript": "^5.0.2",
-    "vitest": "^0.34.0",
-    "eslint": "^8.45.0"
+    "vitest": "^0.34.0"
   }
 }

@@ -14,7 +14,7 @@ export default defineConfig({
       '@/state': resolve(__dirname, './src/state'),
       '@/assets': resolve(__dirname, './src/assets'),
       '@/utils': resolve(__dirname, './src/utils'),
-      '@shared': resolve(__dirname, '../shared'),
+      '@shared': resolve(__dirname, '../shared/dist'),
     },
   },
   server: {

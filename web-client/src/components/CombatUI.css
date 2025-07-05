@@ -1,0 +1,395 @@
+/* Combat UI Styles */
+.combat-ui {
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 1rem;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 400px;
+  min-width: 320px;
+}
+
+/* Turn Information */
+.turn-info {
+  border-bottom: 1px solid #444;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.turn-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.turn-header h3 {
+  margin: 0;
+  color: #4CAF50;
+  font-size: 1.2rem;
+}
+
+.turn-timer {
+  font-family: 'Courier New', monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.turn-timer .urgent {
+  color: #ff4444;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.active-unit-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #4CAF50;
+}
+
+.unit-name {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.unit-faction {
+  font-size: 0.8rem;
+  text-transform: capitalize;
+  color: #ccc;
+}
+
+.action-points {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+/* Combat Actions */
+.combat-actions {
+  margin-bottom: 1.5rem;
+}
+
+.combat-actions h4 {
+  margin: 0 0 1rem 0;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #555;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 80px;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #777;
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-btn.selected {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.2);
+}
+
+.action-btn.move.selected { border-color: #2196F3; background: rgba(33, 150, 243, 0.2); }
+.action-btn.attack.selected { border-color: #f44336; background: rgba(244, 67, 54, 0.2); }
+.action-btn.ability.selected { border-color: #9C27B0; background: rgba(156, 39, 176, 0.2); }
+.action-btn.defend.selected { border-color: #FF9800; background: rgba(255, 152, 0, 0.2); }
+
+.action-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.action-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.action-cost {
+  font-size: 0.8rem;
+  color: #ccc;
+  font-family: 'Courier New', monospace;
+}
+
+/* Turn Controls */
+.turn-controls {
+  display: flex;
+  justify-content: center;
+}
+
+.end-turn-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.end-turn-btn:hover:not(:disabled) {
+  background: #ff6666;
+}
+
+.end-turn-btn:disabled {
+  background: #666;
+  cursor: not-allowed;
+}
+
+/* Unit Status Panel */
+.unit-status-panel {
+  margin-bottom: 1.5rem;
+}
+
+.unit-status-panel h4 {
+  margin: 0 0 1rem 0;
+  color: #fff;
+  font-size: 1rem;
+  border-bottom: 1px solid #444;
+  padding-bottom: 0.5rem;
+}
+
+.units-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.unit-status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  border-left: 3px solid #666;
+}
+
+.unit-status-item.player {
+  border-left-color: #4CAF50;
+}
+
+.unit-status-item.enemy {
+  border-left-color: #f44336;
+}
+
+.unit-status-item.neutral {
+  border-left-color: #FF9800;
+}
+
+.unit-status-item.active {
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid #4CAF50;
+}
+
+.unit-info .unit-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.unit-info .unit-class {
+  font-size: 0.8rem;
+  color: #ccc;
+  text-transform: capitalize;
+}
+
+.unit-stats {
+  flex: 1;
+  margin: 0 1rem;
+}
+
+.health-bar {
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  height: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+
+.health-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f44336 0%, #FF9800 50%, #4CAF50 100%);
+  transition: width 0.3s ease;
+}
+
+.health-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+}
+
+.status-effects {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.status-effect {
+  background: rgba(255, 152, 0, 0.8);
+  color: black;
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.status-effect.defending { background: rgba(33, 150, 243, 0.8); color: white; }
+.status-effect.suppressed { background: rgba(244, 67, 54, 0.8); color: white; }
+.status-effect.stunned { background: rgba(156, 39, 176, 0.8); color: white; }
+
+.unit-status .status-indicator {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-indicator.healthy { background: #4CAF50; color: white; }
+.status-indicator.wounded { background: #FF9800; color: white; }
+.status-indicator.suppressed { background: #f44336; color: white; }
+.status-indicator.stunned { background: #9C27B0; color: white; }
+.status-indicator.unconscious { background: #795548; color: white; }
+.status-indicator.dead { background: #424242; color: #ccc; }
+
+/* Action History */
+.action-history {
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.action-history h4 {
+  margin: 0 0 0.5rem 0;
+  color: #fff;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #444;
+  padding-bottom: 0.25rem;
+}
+
+.history-list {
+  font-size: 0.8rem;
+  font-family: 'Courier New', monospace;
+}
+
+.history-item {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ccc;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+  color: white;
+  font-weight: bold;
+}
+
+.action-actor {
+  color: #4CAF50;
+  font-weight: 600;
+}
+
+.action-type {
+  margin: 0 0.5rem;
+  text-transform: capitalize;
+}
+
+.action-damage {
+  color: #f44336;
+  font-weight: bold;
+}
+
+/* Combat Setup/Completed States */
+.combat-setup,
+.combat-completed {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.combat-setup h3,
+.combat-completed h3 {
+  margin: 0 0 1rem 0;
+  color: #4CAF50;
+}
+
+.victory-status {
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.victory-status.player_victory {
+  background: rgba(76, 175, 80, 0.2);
+  border: 2px solid #4CAF50;
+  color: #4CAF50;
+}
+
+.victory-status.enemy_victory {
+  background: rgba(244, 67, 54, 0.2);
+  border: 2px solid #f44336;
+  color: #f44336;
+}
+
+.victory-status.draw {
+  background: rgba(255, 152, 0, 0.2);
+  border: 2px solid #FF9800;
+  color: #FF9800;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .combat-ui {
+    max-width: 100%;
+    padding: 0.75rem;
+  }
+  
+  .action-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .active-unit-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}

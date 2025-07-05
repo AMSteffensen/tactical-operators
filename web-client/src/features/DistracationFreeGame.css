@@ -1,0 +1,70 @@
+/* Distraction-Free Game - Root Container */
+.distraction-free-game {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  background: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Ensure no external elements interfere */
+.distraction-free-game * {
+  box-sizing: border-box;
+}
+
+/* Smooth transitions between screens */
+.distraction-free-game > * {
+  animation: screenTransition 0.3s ease-out;
+}
+
+@keyframes screenTransition {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Disable scrolling and selection on the game container */
+.distraction-free-game {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Accessibility improvements */
+.distraction-free-game:focus-visible {
+  outline: none;
+}
+
+/* Performance optimizations */
+.distraction-free-game {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .distraction-free-game {
+    background: #000;
+    color: #fff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .distraction-free-game > * {
+    animation: none;
+  }
+}
