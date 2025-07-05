@@ -1,6 +1,7 @@
 {
   "name": "api-server",
   "version": "0.1.0",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/app.ts",
     "dev:smart": "../scripts/api-start.sh",
