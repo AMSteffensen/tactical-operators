@@ -19,6 +19,11 @@ dotenv.config();
 const app = express();
 const server = createServer(app);
 
+// Trust proxy for Railway/production deployments
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', true);
+}
+
 // Socket.IO setup
 const io = new SocketIOServer(server, {
   cors: {
