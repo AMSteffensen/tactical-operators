@@ -98,23 +98,30 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Debug endpoint for Railway troubleshooting (remove in production)
+// Debug endpoint for Railway troubleshooting (available in production)
 app.get('/debug/env', (req, res) => {
-  if (process.env.NODE_ENV !== 'production') {
-    return res.status(404).json({ error: 'Debug endpoint only available in production for Railway troubleshooting' });
-  }
-  
   const debugInfo = {
     timestamp: new Date().toISOString(),
     environment: {
       NODE_ENV: process.env.NODE_ENV,
       PORT: process.env.PORT,
-      DATABASE_URL: process.env.DATABASE_URL ? 'SET' : 'NOT SET',
+      DATABASE_URL: process.env.DATABASE_URL ? `SET (${process.env.DATABASE_URL.substring(0, 30)}...)` : 'NOT SET',
       JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
       CORS_ORIGIN: process.env.CORS_ORIGIN,
     },
+    allEnvVars: {},
     railwayVars: {} as Record<string, string | undefined>
   };
+  
+  // Add all environment variables for debugging
+  Object.keys(process.env).forEach(key => {
+    const value = process.env[key];
+    if (value && value.length > 50) {
+      (debugInfo.allEnvVars as any)[key] = value.substring(0, 50) + '...';
+    } else {
+      (debugInfo.allEnvVars as any)[key] = value;
+    }
+  });
   
   // Add Railway-specific variables
   Object.keys(process.env).forEach(key => {
