@@ -45,17 +45,5 @@ else
     exit 1
 fi
 
-# Run Prisma db push with debugging
 echo ""
-echo "🚀 Running Prisma DB Push..."
-npx prisma db push --schema=./prisma/schema.prisma
-
-if [ $? -eq 0 ]; then
-    echo "✅ Prisma db push successful"
-else
-    echo "❌ Prisma db push failed"
-    exit 1
-fi
-
-echo ""
-echo "🎉 Postinstall completed successfully"
+echo "🎉 Postinstall completed successfully (db push will happen at runtime)"

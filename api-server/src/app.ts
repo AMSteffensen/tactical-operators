@@ -175,6 +175,24 @@ const PORT = process.env.PORT || 3001;
 // Enhanced server startup with error handling
 const startServer = async () => {
   try {
+    // Initialize database schema at startup (when DATABASE_URL is available)
+    if (process.env.DATABASE_URL) {
+      console.log('🗄️ Initializing database schema...');
+      const { execSync } = await import('child_process');
+      try {
+        execSync('npx prisma db push --schema=./prisma/schema.prisma', { 
+          stdio: 'inherit',
+          cwd: process.cwd()
+        });
+        console.log('✅ Database schema synchronized');
+      } catch (dbError) {
+        console.warn('⚠️ Database schema sync failed (may already exist):', dbError);
+        // Don't exit - server can still start for non-DB endpoints
+      }
+    } else {
+      console.warn('⚠️ DATABASE_URL not available - skipping database initialization');
+    }
+
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📊 Health check: http://localhost:${PORT}/health`);
