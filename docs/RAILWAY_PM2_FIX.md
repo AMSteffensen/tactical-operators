@@ -5,9 +5,9 @@ Railway was running PM2 with `ecosystem.config.json` which tries to start multip
 
 ## ✅ **Complete Solution**
 
-### 1. **Switched to Simple Dockerfile**
-- **OLD**: `Dockerfile.railway` (complex workspace handling)
-- **NEW**: `Dockerfile.railway.simple` (straightforward, no PM2)
+### 1. **Switched to Optimized Dockerfile**
+- **OLD**: Multiple experimental Dockerfile variants (complex workspace handling)
+- **NEW**: `Dockerfile` (straightforward, no PM2, ES modules compatible)
 
 ### 2. **Direct Node.js Execution**
 ```dockerfile

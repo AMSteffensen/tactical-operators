@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "postinstall": "bash scripts/debug-postinstall.sh",
+    "postinstall": "prisma generate",
     "postinstall:simple": "prisma generate && prisma db push",
     "dev": "tsx watch src/app.ts",
     "dev:smart": "../scripts/api-start.sh",

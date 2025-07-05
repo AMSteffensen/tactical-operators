@@ -12,7 +12,7 @@ ls -la
 echo ""
 echo "🌍 Environment Variables:"
 echo "- NODE_ENV: $NODE_ENV"
-echo "- DATABASE_URL: ${DATABASE_URL:+SET (${DATABASE_URL:0:30}...)} ${DATABASE_URL:-NOT SET}"
+echo "- DATABASE_URL: ${DATABASE_URL:+SET} ${DATABASE_URL:-NOT SET}"
 echo "- PORT: $PORT"
 
 # Check for Prisma schema

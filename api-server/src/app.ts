@@ -16,47 +16,12 @@ import { setupSocketHandlers } from './sockets/index.js';
 // Load environment variables
 dotenv.config();
 
-// Enhanced debugging for Railway deployment
-console.log('🔍 Environment Debug Info:');
-console.log('- NODE_ENV:', process.env.NODE_ENV);
-console.log('- PORT:', process.env.PORT);
-console.log('- DATABASE_URL:', process.env.DATABASE_URL ? `SET (${process.env.DATABASE_URL.substring(0, 20)}...)` : 'NOT SET');
-console.log('- JWT_SECRET:', process.env.JWT_SECRET ? `SET (${process.env.JWT_SECRET.substring(0, 10)}...)` : 'NOT SET');
-console.log('- CORS_ORIGIN:', process.env.CORS_ORIGIN || 'DEFAULT');
-
-// List all environment variables that start with common prefixes
-console.log('🌍 All Environment Variables:');
-const envVars = Object.keys(process.env).sort();
-envVars.forEach(key => {
-  if (key.startsWith('DATABASE') || key.startsWith('POSTGRES') || key.startsWith('JWT') || key.startsWith('NODE') || key.startsWith('PORT') || key.startsWith('CORS')) {
-    const value = process.env[key];
-    if (value && value.length > 20) {
-      console.log(`- ${key}: ${value.substring(0, 20)}...`);
-    } else {
-      console.log(`- ${key}: ${value}`);
-    }
-  }
-});
-
-// Check for Railway-specific variables
-console.log('🚂 Railway-specific Variables:');
-const railwayVars = envVars.filter(key => key.startsWith('RAILWAY') || key.includes('POSTGRES') || key.includes('DATABASE'));
-railwayVars.forEach(key => {
-  const value = process.env[key];
-  if (value && value.length > 30) {
-    console.log(`- ${key}: ${value.substring(0, 30)}...`);
-  } else {
-    console.log(`- ${key}: ${value}`);
-  }
-});
-
 const app = express();
 const server = createServer(app);
 
 // Trust proxy for Railway/production deployments
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);  
-  console.log('✅ Trust proxy enabled for production');
 }
 
 
@@ -96,46 +61,6 @@ app.use(express.urlencoded({ extended: true }));
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
-});
-
-// Debug endpoint for Railway troubleshooting (available in production)
-app.get('/debug/env', (req, res) => {
-  const debugInfo = {
-    timestamp: new Date().toISOString(),
-    environment: {
-      NODE_ENV: process.env.NODE_ENV,
-      PORT: process.env.PORT,
-      DATABASE_URL: process.env.DATABASE_URL ? `SET (${process.env.DATABASE_URL.substring(0, 30)}...)` : 'NOT SET',
-      JWT_SECRET: process.env.JWT_SECRET ? 'SET' : 'NOT SET',
-      CORS_ORIGIN: process.env.CORS_ORIGIN,
-    },
-    allEnvVars: {},
-    railwayVars: {} as Record<string, string | undefined>
-  };
-  
-  // Add all environment variables for debugging
-  Object.keys(process.env).forEach(key => {
-    const value = process.env[key];
-    if (value && value.length > 50) {
-      (debugInfo.allEnvVars as any)[key] = value.substring(0, 50) + '...';
-    } else {
-      (debugInfo.allEnvVars as any)[key] = value;
-    }
-  });
-  
-  // Add Railway-specific variables
-  Object.keys(process.env).forEach(key => {
-    if (key.startsWith('RAILWAY') || key.includes('POSTGRES') || key.includes('DATABASE')) {
-      const value = process.env[key];
-      if (value && value.length > 30) {
-        debugInfo.railwayVars[key] = value.substring(0, 30) + '...';
-      } else {
-        debugInfo.railwayVars[key] = value;
-      }
-    }
-  });
-  
-  res.json(debugInfo);
 });
 
 // Root endpoint - API info

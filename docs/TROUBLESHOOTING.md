@@ -13,7 +13,7 @@ Common issues and solutions when setting up Railway and Vercel for tactical-oper
 **Root Cause**: Railway is running PM2 ecosystem config designed for local development with multiple services
 
 **Solutions**:
-1. **Fixed in Dockerfile.railway** (already implemented):
+1. **Fixed in Dockerfile** (already implemented):
    ```dockerfile
    # Changed from:
    CMD ["npm", "start"]  # Runs PM2 with ecosystem.json
@@ -25,7 +25,7 @@ Common issues and solutions when setting up Railway and Vercel for tactical-oper
 2. **If still failing, check Dockerfile CMD**:
    ```bash
    # Ensure Railway Dockerfile runs only API server, not PM2
-   grep "CMD" Dockerfile.railway
+   grep "CMD" Dockerfile
    ```
 
 3. **Check Railway logs** for specific error messages:
@@ -42,7 +42,7 @@ Common issues and solutions when setting up Railway and Vercel for tactical-oper
 **Solutions**:
 1. **Use Railway-specific Dockerfile** (implemented):
    ```bash
-   # We created Dockerfile.railway that handles workspace structure
+   # We created Dockerfile that handles workspace structure
    # Updated railway.json to use this from project root
    ```
 
@@ -55,7 +55,7 @@ Common issues and solutions when setting up Railway and Vercel for tactical-oper
 
 3. **Alternative: Use simple Dockerfile**:
    ```bash
-   # Switch railway.json to use Dockerfile.railway.simple
+   # The current Dockerfile is already optimized for Railway deployment
    # This avoids complex workspace dependency resolution
    ```
 
