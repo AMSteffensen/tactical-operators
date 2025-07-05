@@ -15,6 +15,9 @@ COPY api-server/ ./api-server/
 # Install all dependencies using npm workspaces
 RUN npm ci
 
+# Generate Prisma client in the workspace context
+RUN npx prisma generate --schema=./api-server/prisma/schema.prisma
+
 # Build shared package first
 WORKDIR /app/shared
 RUN npm run build
@@ -22,9 +25,6 @@ RUN npm run build
 # Build API server
 WORKDIR /app/api-server
 RUN npm run build
-
-# Generate Prisma client in build stage
-RUN npx prisma generate
 
 # Production setup
 FROM node:20-alpine AS production
@@ -42,6 +42,9 @@ COPY --from=base --chown=api-server:nodejs /app/api-server/prisma ./prisma
 COPY --from=base --chown=api-server:nodejs /app/shared/dist ./shared/dist
 COPY --from=base --chown=api-server:nodejs /app/node_modules ./node_modules
 
+# Ensure working directory is correct for the application
+WORKDIR /app
+
 # Switch to non-root user
 USER api-server
 
@@ -52,5 +55,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
-# Start application directly - NO PM2, NO npm
+# Start application directly - NO PM2, NO npm scripts
 CMD ["node", "dist/app.js"]
