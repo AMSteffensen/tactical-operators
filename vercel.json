@@ -1,23 +1,19 @@
 {
   "version": 2,
   "name": "tactical-operator-web",
-  "builds": [
-    {
-      "src": "web-client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
+  "buildCommand": "cd web-client && npm run build",
+  "outputDirectory": "web-client/dist",
+  "devCommand": "cd web-client && npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite",
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "$API_URL/api/$1"
+      "dest": "https://tactical-operators-production.up.railway.app/api/$1"
     },
     {
-      "src": "/socket.io/(.*)",
-      "dest": "$SOCKET_URL/socket.io/$1"
+      "src": "/socket.io/(.*)", 
+      "dest": "https://tactical-operators-production.up.railway.app/socket.io/$1"
     },
     {
       "src": "/(.*)",
@@ -25,22 +21,23 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "@vite_api_url",
-    "VITE_SOCKET_URL": "@vite_socket_url"
+    "VITE_API_URL": "https://tactical-operators-production.up.railway.app",
+    "VITE_SOCKET_URL": "https://tactical-operators-production.up.railway.app"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "@vite_api_url",
-      "VITE_SOCKET_URL": "@vite_socket_url"
+      "VITE_API_URL": "https://tactical-operators-production.up.railway.app",
+      "VITE_SOCKET_URL": "https://tactical-operators-production.up.railway.app"
     }
   },
   "functions": {
     "web-client/dist/**": {
       "headers": {
         "X-Frame-Options": "SAMEORIGIN",
-        "X-Content-Type-Options": "nosniff",
+        "X-Content-Type-Options": "nosniff", 
         "X-XSS-Protection": "1; mode=block",
-        "Referrer-Policy": "strict-origin-when-cross-origin"
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://tactical-operators-production.up.railway.app wss://tactical-operators-production.up.railway.app"
       }
     }
   }

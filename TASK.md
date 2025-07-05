@@ -282,6 +282,99 @@ Draft Tasks (Not yet planned)
 
 ---
 
+## 🔄 IN PROGRESS: Vercel Frontend Deployment Setup (July 6, 2025)
+
+**Setting up production frontend deployment on Vercel with automatic PR previews and production deployments.**
+
+### Objective
+- Deploy web client to Vercel with production Railway backend integration
+- Automatic preview deployments for PR testing
+- Seamless CI/CD pipeline with staging and production environments
+
+### Components Created
+
+#### Vercel Configuration
+- **`vercel.json`** - Updated with production Railway API URLs
+  - Build configuration for web-client directory
+  - Environment variables for production deployment
+  - Security headers with CSP configuration
+  - API proxy routes to Railway backend
+
+#### Frontend Environment Setup
+- **`.env.production`** - Production environment variables
+  - VITE_API_URL pointing to Railway production
+  - VITE_SOCKET_URL for real-time communication
+  - Production environment detection
+
+#### CORS Configuration Updates
+- **Enhanced API server CORS** - Multiple origin support
+  - Local development (localhost:3000)
+  - Production Vercel domains (.vercel.app)
+  - Vercel preview URLs (automatic detection)
+  - Environment-specific origin configuration
+- **Socket.IO CORS** - Matching configuration for real-time features
+  - Credential support for authenticated connections
+  - Vercel preview URL pattern matching
+
+#### GitHub Actions Workflow
+- **`vercel-deployment.yml`** - Complete CI/CD pipeline
+  - Build testing with type checking and linting
+  - Preview deployments on PR creation
+  - Production deployments on main branch
+  - Automatic PR comments with preview URLs
+  - Build artifact verification
+
+#### Testing & Documentation
+- **`test-vercel-local.sh`** - Local deployment testing script
+- **`VERCEL_DEPLOYMENT_GUIDE.md`** - Comprehensive setup guide
+  - Vercel project configuration
+  - GitHub secrets setup
+  - Deployment workflow documentation
+  - Troubleshooting guide
+
+### Configuration Required
+
+#### Vercel Project Settings
+1. **Framework**: Vite
+2. **Root Directory**: web-client
+3. **Build Command**: `cd web-client && npm run build`
+4. **Output Directory**: web-client/dist
+5. **Environment Variables**:
+   - `VITE_API_URL`: https://tactical-operators-production.up.railway.app
+   - `VITE_SOCKET_URL`: https://tactical-operators-production.up.railway.app
+   - `VITE_ENVIRONMENT`: production/preview
+
+#### GitHub Secrets Needed
+- `VERCEL_TOKEN` - Vercel authentication token
+- `VERCEL_ORG_ID` - Organization ID
+- `VERCEL_PROJECT_ID` - Project ID
+
+#### Railway Backend Updates
+- ✅ **Enhanced CORS** - Supports Vercel domains and preview URLs
+- ✅ **Socket.IO CORS** - Matching configuration for real-time features
+- ✅ **Origin logging** - Debug rejected CORS requests
+
+### Testing Strategy
+1. **Local Testing**: Use `test-vercel-local.sh` to verify build with production settings
+2. **Preview Testing**: PR deployments test against Railway production API
+3. **Production Testing**: Automated health checks and manual verification
+
+### Next Steps
+- [ ] Create Vercel project and configure settings
+- [ ] Add GitHub secrets for Vercel deployment
+- [ ] Test PR workflow with preview deployment
+- [ ] Configure custom domain (optional)
+- [ ] Set up Vercel Analytics and monitoring
+
+### Benefits
+- ✅ **Automatic Deployments** - PR previews and production deployments
+- ✅ **Zero Downtime** - Vercel's edge network with instant rollbacks
+- ✅ **Performance** - Global CDN with optimized static asset delivery
+- ✅ **Security** - HTTPS by default with CSP headers
+- ✅ **Developer Experience** - Preview URLs for testing changes
+
+---
+
 ## 🔨 Active Tasks
 
 ### 🏃‍♂️ Immediate Priority (Next Development Session)
@@ -619,9 +712,86 @@ Draft Tasks (Not yet planned)
 
 ---
 
-## 📅 Planning
+## ✅ COMPLETED: Production Deployment Verification (July 6, 2025)
 
-* Update `TASK.md` after each completed or started task
-* Add newly discovered tasks under “Discovered During Work”
-* Reflect dependencies (e.g. guilds depend on player system)
-* Discuss major changes in `PLANNING.md` before implementation
+**Successfully verified production deployment after merging PR with Docker fixes.**
+
+### Production Test Results
+
+#### Health Check Endpoint ✅
+```bash
+curl https://tactical-operators-production.up.railway.app/health
+```
+**Response:**
+```json
+{
+  "status": "OK",
+  "timestamp": "2025-07-05T23:39:05.333Z",
+  "uptime": 426.614041465,
+  "version": "0.1.0",
+  "environment": "production",
+  "database": "connected",
+  "memory": {
+    "used": 12,
+    "total": 13,
+    "external": 2
+  }
+}
+```
+
+#### Test Status Endpoint ✅
+```bash
+curl https://tactical-operators-production.up.railway.app/test/status
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Test endpoint operational",
+  "timestamp": "2025-07-05T23:39:19.217Z",
+  "environment": "production",
+  "branch": "main",
+  "commit": "f6598a7"
+}
+```
+
+#### API Documentation Endpoint ✅
+```bash
+curl https://tactical-operators-production.up.railway.app/
+```
+**Response:** Complete API endpoint documentation with enhanced health and test endpoints.
+
+#### Authentication Endpoints ✅
+- **Registration**: Working with proper validation (password complexity)
+- **Login**: Working with proper error handling
+- **Database**: Connected and operational
+
+### Docker Fixes Applied
+- ✅ **Prisma schema path issue resolved**
+- ✅ **Startup script dependency removed**
+- ✅ **Direct CMD approach implemented**
+- ✅ **Working directory properly set**
+- ✅ **OpenSSL installed for Prisma compatibility**
+
+### Production Environment Status
+- 🌍 **Domain**: `tactical-operators-production.up.railway.app`
+- 🗄️ **Database**: PostgreSQL connected and operational
+- 🔐 **Authentication**: JWT-based auth working
+- 📊 **Health Monitoring**: Enhanced health check with memory/uptime metrics
+- 🧪 **Testing**: New test endpoint for staging verification
+- 🔒 **Security**: All endpoints properly secured
+
+### Verified Features
+- ✅ Health monitoring with database status
+- ✅ Memory usage reporting (12MB used / 13MB total)
+- ✅ Process uptime tracking (426+ seconds)
+- ✅ Environment detection (production)
+- ✅ Git branch and commit tracking
+- ✅ Input validation (password complexity)
+- ✅ Error handling (user already exists, invalid credentials)
+- ✅ CORS and security headers
+- ✅ Rate limiting functional
+
+**Production deployment is fully operational and ready for frontend integration!**
+
+---
