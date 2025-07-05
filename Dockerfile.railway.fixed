@@ -20,11 +20,11 @@ WORKDIR /app/shared
 RUN npm run build
 
 # Build and setup API server
-WORKDIR /app/api-server
+WORKDIR /app/api-serverRUN npx prisma generate
 RUN npm run build
 
 # CRITICAL: Generate Prisma client AFTER build in the correct directory
-RUN npx prisma generate
+RUN npx prisma generate --schema=./prisma/schema.prisma
 
 # CRITICAL: Copy shared dist to node_modules for @shared imports to work
 RUN mkdir -p node_modules/@shared && cp -r ../shared/dist/* node_modules/@shared/
