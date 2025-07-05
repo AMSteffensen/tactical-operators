@@ -57,6 +57,25 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Root endpoint - API info
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Tactical Operator API Server',
+    version: '0.1.0',
+    endpoints: {
+      health: '/health',
+      auth: {
+        register: 'POST /api/auth/register',
+        login: 'POST /api/auth/login'
+      },
+      character: 'GET /api/character (requires auth)',
+      guild: 'GET /api/guild (requires auth)',
+      campaign: 'GET /api/campaign (requires auth)'
+    }
+  });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/character', characterRoutes);
