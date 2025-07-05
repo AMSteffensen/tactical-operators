@@ -1,0 +1,35 @@
+{
+  "services": [
+    {
+      "name": "tactical-operator-api-staging",
+      "source": {
+        "type": "dockerfile",
+        "dockerfile": "Dockerfile"
+      },
+      "variables": {
+        "NODE_ENV": "staging",
+        "PORT": "3001"
+      },
+      "domains": [
+        {
+          "domain": "tactical-operator-api-staging.up.railway.app"
+        }
+      ],
+      "healthcheckPath": "/health",
+      "healthcheckTimeout": 30,
+      "restartPolicyType": "on-failure",
+      "restartPolicyMaxRetries": 3
+    },
+    {
+      "name": "tactical-operator-db-staging",
+      "source": {
+        "type": "postgresql",
+        "version": "15"
+      },
+      "variables": {
+        "POSTGRES_DB": "tactical_operator_staging",
+        "POSTGRES_USER": "tactical_user_staging"
+      }
+    }
+  ]
+}

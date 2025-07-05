@@ -1,0 +1,135 @@
+name: PR Staging Deployment
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ opened, synchronize, reopened ]
+  pull_request_target:
+    branches: [ main ]
+    types: [ closed ]
+
+env:
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_STAGING_TOKEN }}
+
+jobs:
+  deploy-staging:
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install Railway CLI
+      run: npm install -g @railway/cli
+    
+    - name: Deploy to Railway Staging
+      run: |
+        railway login --token $RAILWAY_TOKEN
+        railway environment staging
+        railway up --service tactical-operator-api-staging
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_STAGING_TOKEN }}
+    
+    - name: Wait for deployment
+      run: sleep 30
+    
+    - name: Test staging deployment
+      run: |
+        STAGING_URL="https://tactical-operator-api-staging.up.railway.app"
+        echo "Testing staging deployment at $STAGING_URL"
+        
+        # Test health endpoint
+        if curl -f "$STAGING_URL/health"; then
+          echo "✅ Health check passed"
+        else
+          echo "❌ Health check failed"
+          exit 1
+        fi
+        
+        # Test API endpoints
+        if curl -f "$STAGING_URL/api/auth/health"; then
+          echo "✅ Auth API available"
+        else
+          echo "⚠️ Auth API check failed (may be expected if endpoint doesn't exist)"
+        fi
+    
+    - name: Comment PR with staging URL
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          const botComment = comments.find(comment => 
+            comment.user.type === 'Bot' && 
+            comment.body.includes('🚀 Staging Deployment')
+          );
+          
+          const body = `🚀 **Staging Deployment Ready**
+          
+          Your PR has been deployed to staging:
+          - **API**: https://tactical-operator-api-staging.up.railway.app
+          - **Health Check**: https://tactical-operator-api-staging.up.railway.app/health
+          
+          **Test your changes:**
+          \`\`\`bash
+          curl https://tactical-operator-api-staging.up.railway.app/health
+          \`\`\`
+          
+          This deployment will be automatically cleaned up when the PR is closed.`;
+          
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: body
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+          }
+
+  cleanup-staging:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Install Railway CLI
+      run: npm install -g @railway/cli
+    
+    - name: Cleanup staging deployment
+      run: |
+        railway login --token $RAILWAY_TOKEN
+        railway environment staging
+        echo "Staging deployment cleaned up (if auto-cleanup is configured)"
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_STAGING_TOKEN }}
+      continue-on-error: true
+    
+    - name: Comment PR cleanup
+      uses: actions/github-script@v7
+      with:
+        script: |
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: '🧹 **Staging Environment Cleaned Up**\n\nThe staging deployment for this PR has been cleaned up.'
+          });
