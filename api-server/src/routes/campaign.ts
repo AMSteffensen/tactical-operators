@@ -1,6 +1,6 @@
 import express, { Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../middleware/authMiddleware.js';
-import { ApiResponse } from '@shared/types';
+import { ApiResponse } from '../../../shared/dist/types/index.js';
 
 const router = express.Router();
 

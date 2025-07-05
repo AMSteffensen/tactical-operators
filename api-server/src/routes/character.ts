@@ -1,8 +1,8 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticate, AuthenticatedRequest } from '../middleware/authMiddleware.js';
-import { ApiResponse } from '@shared/types';
-import { CharacterSchema, CharacterStatsSchema, CharacterClassSchema } from '@shared/types';
+import { ApiResponse } from '../../../shared/dist/types/index.js';
+import { CharacterSchema, CharacterStatsSchema, CharacterClassSchema } from '../../../shared/dist/types/index.js';
 import { z } from 'zod';
 
 const router = express.Router();

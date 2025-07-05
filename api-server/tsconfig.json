@@ -13,16 +13,7 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@/routes/*": ["./src/routes/*"],
-      "@/services/*": ["./src/services/*"],
-      "@/models/*": ["./src/models/*"],
-      "@/controllers/*": ["./src/controllers/*"],
-      "@/middleware/*": ["./src/middleware/*"],
-      "@/config/*": ["./src/config/*"],
-      "@shared/*": ["../shared/dist/*"]
-    }
+    "paths": {}
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests"]

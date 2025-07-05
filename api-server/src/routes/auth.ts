@@ -4,8 +4,8 @@ import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { prisma } from '../config/database.js';
-import { ApiResponse } from '@shared/types';
-import { ERROR_MESSAGES } from '@shared/constants';
+import { ApiResponse } from '../../../shared/dist/types/index.js';
+import { ERROR_MESSAGES } from '../../../shared/dist/constants/index.js';
 
 const router = express.Router();
 

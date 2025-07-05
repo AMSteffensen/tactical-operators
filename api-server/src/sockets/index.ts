@@ -1,6 +1,6 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
-import { GAME_EVENTS } from '@shared/constants';
+import { GAME_EVENTS } from '../../../shared/dist/constants/index.js';
 
 interface AuthenticatedSocket extends Socket {
   userId?: string;
