@@ -4,8 +4,8 @@ import { Character, CharacterClass, CharacterStats } from '@shared/types';
 // Use relative URLs for development (works with Vite proxy)
 // Use absolute URLs for production (points to Railway API)
 const getAPIBaseURL = () => {
-  // In production, use the Railway API URL
-  if (import.meta.env.PROD) {
+  // In production (Vercel deployment), use the Railway API URL
+  if (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('tactical-operator')) {
     return 'https://tactical-operator-api.up.railway.app/api/character';
   }
   // In development, use relative URLs that work with Vite proxy

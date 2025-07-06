@@ -5,7 +5,7 @@ import axios from 'axios';
 // Use absolute URLs for production (points to Railway API)
 const getBaseURL = () => {
   // In production, use the Railway API URL
-  if (import.meta.env.PROD) {
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
     return 'https://tactical-operator-api.up.railway.app/api/auth';
   }
   // In development, use relative URLs that work with Vite proxy

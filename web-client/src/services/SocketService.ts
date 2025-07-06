@@ -61,7 +61,8 @@ export class SocketService {
   
   constructor() {
     // Check if socket should be disabled (for development/testing)
-    const socketDisabled = (import.meta as any).env.VITE_DISABLE_SOCKET === 'true';
+    // In development, socket can be disabled via localStorage
+    const socketDisabled = localStorage.getItem('DISABLE_SOCKET') === 'true';
     this.connectionEnabled = !socketDisabled;
     
     // Don't auto-connect in constructor to avoid blocking app startup
@@ -89,10 +90,11 @@ export class SocketService {
 
     // Use Railway URL in production, localhost in development
     const getSocketURL = () => {
-      if (import.meta.env.PROD) {
+      // In production (Vercel deployment), use the Railway API URL
+      if (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('tactical-operator')) {
         return 'https://tactical-operator-api.up.railway.app';
       }
-      return (import.meta as any).env.VITE_SOCKET_URL || 'http://localhost:3001';
+      return 'http://localhost:3001';
     };
 
     const socketUrl = getSocketURL();
