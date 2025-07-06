@@ -7,10 +7,6 @@
   "installCommand": "npm ci",
   "rewrites": [
     {
-      "source": "/api/test",
-      "destination": "https://httpbin.org/json"
-    },
-    {
       "source": "/api/(.*)",
       "destination": "https://tactical-operator-api.up.railway.app/api/$1"
     },

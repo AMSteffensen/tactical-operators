@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "prebuild": "../scripts/debug-vercel-env.sh && ../scripts/configure-vercel-rewrites.sh",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "build": "npm run typecheck && vite build",
