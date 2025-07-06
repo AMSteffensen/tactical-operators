@@ -1,8 +1,10 @@
 // Character API service for frontend
 import { Character, CharacterClass, CharacterStats } from '@shared/types';
+import { getApiConfig } from './apiConfig';
 
-// Always use relative URLs - they work with both Vite proxy (dev) and Vercel rewrites (prod)
-const API_BASE_URL = '/api/character';
+// Use dynamic API configuration
+const apiConfig = getApiConfig();
+const API_BASE_URL = apiConfig.characterURL;
 
 export interface CreateCharacterData {
   name: string;

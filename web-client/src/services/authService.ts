@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { getApiConfig } from './apiConfig';
 
-// Create axios instance with base configuration
-// Always use relative URLs - they work with both Vite proxy (dev) and Vercel rewrites (prod)
+// Create axios instance with dynamic configuration
+const apiConfig = getApiConfig();
 const api = axios.create({
-  baseURL: '/api/auth',
+  baseURL: apiConfig.authURL,
   headers: {
     'Content-Type': 'application/json',
   },

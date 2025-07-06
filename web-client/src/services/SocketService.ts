@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { getApiConfig } from './apiConfig';
 
 // Define event types for type safety
 export interface ServerToClientEvents {
@@ -88,16 +89,9 @@ export class SocketService {
       return;
     }
 
-    // Use Railway URL in production, localhost in development
-    const getSocketURL = () => {
-      // In production (Vercel deployment), use the Railway API URL
-      if (window.location.hostname.includes('vercel.app') || window.location.hostname.includes('tactical-operator')) {
-        return 'https://tactical-operator-api.up.railway.app';
-      }
-      return 'http://localhost:3001';
-    };
-
-    const socketUrl = getSocketURL();
+    // Use dynamic API configuration
+    const apiConfig = getApiConfig();
+    const socketUrl = apiConfig.socketURL;
     
     console.log('🔌 Connecting to Socket.IO server:', socketUrl);
     
