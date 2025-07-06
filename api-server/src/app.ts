@@ -41,13 +41,29 @@ const io = new SocketIOServer(server, {
         'http://localhost:3000',
         'https://tactical-operator.vercel.app',
         'https://tactical-operators.vercel.app',
+        'https://tactical-operators-web-client.vercel.app',
         process.env.SOCKET_CORS_ORIGIN,
       ].filter(Boolean);
       
-      // Allow known origins or Vercel preview URLs
-      if (socketAllowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
+      // Allow known origins
+      if (socketAllowedOrigins.includes(origin)) {
+        console.log(`✅ Socket.IO CORS allowed known origin: ${origin}`);
         return callback(null, true);
       }
+      
+      // Allow Vercel preview URLs
+      if (origin.includes('.vercel.app')) {
+        console.log(`✅ Socket.IO CORS allowed Vercel preview URL: ${origin}`);
+        return callback(null, true);
+      }
+      
+      console.warn(`🚫 Socket.IO CORS rejected origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST'],
+  },
+});
       
       console.warn(`🚫 Socket.IO CORS rejected origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
@@ -65,6 +81,7 @@ const allowedOrigins = [
   'http://localhost:3000', // Local development
   'https://tactical-operator.vercel.app', // Production Vercel
   'https://tactical-operators.vercel.app', // Alternative domain
+  'https://tactical-operators-web-client.vercel.app', // Web client domain
   process.env.CORS_ORIGIN, // Environment-specific origin
 ].filter(Boolean); // Remove undefined values
 
@@ -73,8 +90,15 @@ app.use(cors({
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
     
-    // Check if origin is in allowed list or is a Vercel preview URL
-    if (allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) {
+      console.log(`✅ CORS allowed known origin: ${origin}`);
+      return callback(null, true);
+    }
+    
+    // Check if it's a Vercel preview URL (any subdomain of vercel.app)
+    if (origin.includes('.vercel.app')) {
+      console.log(`✅ CORS allowed Vercel preview URL: ${origin}`);
       return callback(null, true);
     }
     
@@ -83,6 +107,8 @@ app.use(cors({
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
 }));
 
 // Rate limiting (only in production)
