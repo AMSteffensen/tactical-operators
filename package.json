@@ -29,6 +29,7 @@
     "start:api": "cd api-server && npm start",
     "start:web": "cd web-client && npm run preview",
     "build": "npm run build:shared && npm run build:api && npm run build:web",
+    "build:vercel": "npm run build:shared && npm run build:web",
     "build:shared": "cd shared && npm run build",
     "build:web": "cd web-client && npm run build",
     "build:api": "cd api-server && npm run build",
