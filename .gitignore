@@ -154,3 +154,4 @@ local.properties
 dist/
 web-build/
 .expo-shared/
+.vercel
