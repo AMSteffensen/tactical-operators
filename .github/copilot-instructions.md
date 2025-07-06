@@ -10,6 +10,7 @@ This document defines the expected behaviors, conventions, and workflows for Git
 - **Refer to `TASK.md`** before starting work. If the current task is not listed, add a brief summary and date.
 - **Respect all naming conventions, file structures, and architectural patterns** described in `PLANNING.md`.
 - **Use `.env` files for all environment config**. Load them via `dotenv` (Node)
+- Use feature branches, pushing directly to main is prohibited. Create a feature branch when working and then create a PR with changes.
 ---
 
 ## 🎮 Game Code Structure & Modularity

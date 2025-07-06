@@ -154,4 +154,8 @@ local.properties
 dist/
 web-build/
 .expo-shared/
+
+# Vercel
 .vercel
+.vercel/project.json
+.vercel/README.txt

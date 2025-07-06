@@ -29,18 +29,59 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 
-// Socket.IO setup
+// Socket.IO setup with enhanced CORS
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.SOCKET_CORS_ORIGIN || 'http://localhost:3000',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, native clients)
+      if (!origin) return callback(null, true);
+      
+      // Define allowed origins for Socket.IO
+      const socketAllowedOrigins = [
+        'http://localhost:3000',
+        'https://tactical-operator.vercel.app',
+        'https://tactical-operators.vercel.app',
+        process.env.SOCKET_CORS_ORIGIN,
+      ].filter(Boolean);
+      
+      // Allow known origins or Vercel preview URLs
+      if (socketAllowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
+        return callback(null, true);
+      }
+      
+      console.warn(`🚫 Socket.IO CORS rejected origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    },
     methods: ['GET', 'POST'],
+    credentials: true,
   },
 });
 
 // Security middleware
 app.use(helmet());
+
+// Enhanced CORS configuration for multiple environments
+const allowedOrigins = [
+  'http://localhost:3000', // Local development
+  'https://tactical-operator.vercel.app', // Production Vercel
+  'https://tactical-operators.vercel.app', // Alternative domain
+  process.env.CORS_ORIGIN, // Environment-specific origin
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    // Check if origin is in allowed list or is a Vercel preview URL
+    if (allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // Log rejected origins for debugging
+    console.warn(`🚫 CORS rejected origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
 }));
 

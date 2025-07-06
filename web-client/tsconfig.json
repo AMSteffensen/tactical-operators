@@ -25,7 +25,9 @@
       "@/assets/*": ["./src/assets/*"],
       "@/utils/*": ["./src/utils/*"],
       "@shared/*": ["../shared/*"]
-    }
+    },
+    "types": ["vite/client"],
+    "skipDefaultLibCheck": true
   },
   "include": ["src", "src/vite-env.d.ts"],
   "types": ["vite/client"]
