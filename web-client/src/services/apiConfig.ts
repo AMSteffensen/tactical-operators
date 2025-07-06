@@ -12,8 +12,8 @@ export interface ApiConfig {
 }
 
 export const getApiConfig = (): ApiConfig => {
-  // For HTTP requests, always use relative URLs so Vercel rewrites can proxy them
-  // Only for WebSocket connections do we need direct URLs
+  // For Vercel deployments, use serverless function proxy
+  // For local development, use Vite proxy to local API
   
   const prNumber = import.meta.env.VITE_PR_NUMBER;
   const env = import.meta.env.VITE_VERCEL_ENV;
@@ -30,43 +30,17 @@ export const getApiConfig = (): ApiConfig => {
     isVercelPreview
   });
 
-  // In preview environments with PR number, provide direct URL for WebSocket
-  if ((env === 'preview' && prNumber) || (isVercelPreview && prNumber)) {
-    const railwayURL = `https://tactical-operators-tactical-operators-pr-${prNumber}.up.railway.app`;
-    console.log('🎯 Using PR Railway URL:', railwayURL);
+  // For Vercel deployments (preview or production), use serverless function proxy
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    console.log('🎯 Using Vercel serverless function proxy');
     return {
-      baseURL: railwayURL,
-      apiURL: '/api',           // Relative - uses Vercel rewrite
-      authURL: '/api/auth',     // Relative - uses Vercel rewrite  
-      characterURL: '/api/character', // Relative - uses Vercel rewrite
-      socketURL: railwayURL,    // Direct - WebSocket connection
-    };
-  }
-
-  // For Vercel preview deployments without PR number, try to extract from environment or use staging
-  if ((env === 'preview') || isVercelPreview) {
-    // For now, fall back to production Railway URL for preview deployments without PR number
-    const railwayURL = 'https://tactical-operator-api.up.railway.app';
-    console.log('🎯 Using fallback Railway URL for preview:', railwayURL);
-    return {
-      baseURL: railwayURL,
-      apiURL: '/api',           // Relative - uses Vercel rewrite
-      authURL: '/api/auth',     // Relative - uses Vercel rewrite
-      characterURL: '/api/character', // Relative - uses Vercel rewrite
-      socketURL: railwayURL,    // Direct - WebSocket connection
-    };
-  }
-
-  // In production, provide direct URL for WebSocket
-  if (env === 'production') {
-    const railwayURL = 'https://tactical-operator-api.up.railway.app';
-    console.log('🎯 Using production Railway URL:', railwayURL);
-    return {
-      baseURL: railwayURL,
-      apiURL: '/api',           // Relative - uses Vercel rewrite
-      authURL: '/api/auth',     // Relative - uses Vercel rewrite
-      characterURL: '/api/character', // Relative - uses Vercel rewrite
-      socketURL: railwayURL,    // Direct - WebSocket connection
+      baseURL: '', // Use current domain
+      apiURL: '/api/proxy',           // Proxy through serverless function
+      authURL: '/api/proxy/auth',     // Proxy through serverless function  
+      characterURL: '/api/proxy/character', // Proxy through serverless function
+      socketURL: prNumber ? 
+        `https://tactical-operators-tactical-operators-pr-${prNumber}.up.railway.app` :
+        'https://tactical-operator-api.up.railway.app', // Direct WebSocket connection
     };
   }
 

@@ -5,20 +5,7 @@
   "buildCommand": "npm ci && cd shared && npm run build && cd ../web-client && npm ci && npm run build",
   "outputDirectory": "web-client/dist",
   "installCommand": "npm ci",
-  "rewrites": [
-    {
-      "source": "/api/test",
-      "destination": "https://httpbin.org/json"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "https://tactical-operator-api.up.railway.app/api/$1"
-    },
-    {
-      "source": "/socket.io/(.*)", 
-      "destination": "https://tactical-operator-api.up.railway.app/socket.io/$1"
-    }
-  ],
+  "rewrites": [],
   "env": {
     "VITE_API_URL": "https://tactical-operator-api.up.railway.app",
     "VITE_SOCKET_URL": "https://tactical-operator-api.up.railway.app",
@@ -55,7 +42,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; frame-src 'self' https://vercel.live; connect-src 'self' https://tactical-operator-api.up.railway.app wss://tactical-operator-api.up.railway.app https://vercel.live wss://vercel.live"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; frame-src 'self' https://vercel.live; connect-src 'self' https://*.railway.app wss://*.railway.app https://vercel.live wss://vercel.live"
         }
       ]
     }
