@@ -15,6 +15,10 @@ echo "PR Number: $PR_NUMBER"
 if [ "$VERCEL_ENV" = "preview" ] && [ -n "$PR_NUMBER" ]; then
     RAILWAY_URL="https://tactical-operators-tactical-operators-pr-${PR_NUMBER}.up.railway.app"
     echo "Using PR Railway URL: $RAILWAY_URL"
+elif [ "$VERCEL_ENV" = "preview" ]; then
+    # Preview deployment without PR number - use production Railway for now
+    RAILWAY_URL="https://tactical-operator-api.up.railway.app"
+    echo "Using production Railway URL for preview (no PR): $RAILWAY_URL"
 elif [ "$VERCEL_ENV" = "production" ]; then
     RAILWAY_URL="https://tactical-operator-api.up.railway.app"
     echo "Using production Railway URL: $RAILWAY_URL"

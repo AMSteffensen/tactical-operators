@@ -758,3 +758,39 @@ curl https://tactical-operators-production.up.railway.app/
 **Production deployment is fully operational and ready for frontend integration!**
 
 ---
+
+## 🔄 IN PROGRESS: Authentication System CORS & Environment Configuration (July 6, 2025)
+
+**Fixing CORS errors and implementing dynamic Railway URL configuration for Vercel preview deployments.**
+
+### Current Status: Testing Phase
+- **Phase**: Comprehensive testing of authentication flow across environments
+- **Environment**: Authentication system deployed with dynamic configuration
+- **Next**: Validate end-to-end authentication on Vercel preview deployments
+
+### Completed Configurations
+- ✅ **Fixed Double API Path Issue**: Corrected authService axios configuration to prevent `/api/api` URLs
+- ✅ **Dynamic Railway URL Detection**: Implemented environment-based Railway URL selection
+  - Preview: `https://tactical-operators-tactical-operators-pr-{PR_NUMBER}.up.railway.app`
+  - Production: `https://tactical-operator-api.up.railway.app`
+  - Development: Uses Vite proxy to localhost
+- ✅ **Vercel Prebuild Configuration**: Moved script from buildCommand to package.json prebuild
+- ✅ **Environment Variable Setup**: Added VITE_PR_NUMBER and VITE_VERCEL_ENV support
+- ✅ **CSP Headers Updated**: Added Vercel live feedback and WebSocket support
+- ✅ **Debug Tools Created**: API configuration debug component and browser test scripts
+
+### Debug Tools Available
+- **ApiConfigDebug Component**: Visual display of environment variables and API configuration
+- **Browser Test Script**: `scripts/browser-auth-test.js` - Console script for testing API calls
+- **Frontend Config Test**: `scripts/test-frontend-config.sh` - Local environment testing
+
+### Testing Checklist
+- [ ] **Production Environment Test**: Verify authentication on main Vercel deployment
+- [ ] **Preview Environment Test**: Test PR-specific Railway URL routing
+- [ ] **Network Request Validation**: Confirm Vercel rewrites proxy to Railway correctly
+- [ ] **Authentication Flow Test**: End-to-end registration and login testing
+- [ ] **Error Handling Test**: Verify CORS and network error handling
+
+### Known Issues
+- Railway PR environments may have deployment lag causing temporary 404s
+- Need to verify Vercel environment variables are properly passed to frontend build
