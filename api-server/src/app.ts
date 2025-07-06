@@ -48,7 +48,7 @@ const io = new SocketIOServer(server, {
       // Allow known origins
       if (socketAllowedOrigins.includes(origin)) {
         console.log(`✅ Socket.IO CORS allowed known origin: ${origin}`);
-        return callback(null, true);
+              return callback(null, true);
       }
       
       // Allow Vercel preview URLs
@@ -62,14 +62,6 @@ const io = new SocketIOServer(server, {
     },
     credentials: true,
     methods: ['GET', 'POST'],
-  },
-});
-      
-      console.warn(`🚫 Socket.IO CORS rejected origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    },
-    methods: ['GET', 'POST'],
-    credentials: true,
   },
 });
 
