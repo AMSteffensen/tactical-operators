@@ -3,9 +3,6 @@
  * Uses VERCEL_ENV and VERCEL_GIT_PULL_REQUEST_ID for automatic Railway URL detection
  */
 
-const prNumber = import.meta.env.VITE_PR_NUMBER;
-const env = import.meta.env.VITE_VERCEL_ENV;
-
 export interface ApiConfig {
   baseURL: string;
   apiURL: string;
