@@ -10,18 +10,14 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "$API_URL/api/$1"
+      "source": "/api/(.*)",
+      "destination": "$API_URL/api/$1"
     },
     {
-      "src": "/socket.io/(.*)",
-      "dest": "$SOCKET_URL/socket.io/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/web-client/dist/$1"
+      "source": "/socket.io/(.*)",
+      "destination": "$SOCKET_URL/socket.io/$1"
     }
   ],
   "headers": [
