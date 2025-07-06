@@ -1,10 +1,6 @@
 {
   "version": 2,
   "name": "tactical-operator-web",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "devCommand": "npm run dev",
-  "installCommand": "npm ci",
   "framework": "vite",
   "rewrites": [
     {
