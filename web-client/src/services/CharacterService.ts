@@ -1,9 +1,18 @@
 // Character API service for frontend
 import { Character, CharacterClass, CharacterStats } from '@shared/types';
 
-// Use relative URLs that work with Vite proxy in development
-// and absolute URLs in production
-const API_BASE_URL = '/api/character';
+// Use relative URLs for development (works with Vite proxy)
+// Use absolute URLs for production (points to Railway API)
+const getAPIBaseURL = () => {
+  // In production, use the Railway API URL
+  if (import.meta.env.PROD) {
+    return 'https://tactical-operator-api.up.railway.app/api/character';
+  }
+  // In development, use relative URLs that work with Vite proxy
+  return '/api/character';
+};
+
+const API_BASE_URL = getAPIBaseURL();
 
 export interface CreateCharacterData {
   name: string;

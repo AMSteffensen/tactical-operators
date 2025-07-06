@@ -10,16 +10,6 @@
       }
     }
   ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "$API_URL/api/$1"
-    },
-    {
-      "source": "/socket.io/(.*)",
-      "destination": "$SOCKET_URL/socket.io/$1"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -42,15 +32,5 @@
         }
       ]
     }
-  ],
-  "env": {
-    "VITE_API_URL": "@vite_api_url",
-    "VITE_SOCKET_URL": "@vite_socket_url"
-  },
-  "build": {
-    "env": {
-      "VITE_API_URL": "@vite_api_url",
-      "VITE_SOCKET_URL": "@vite_socket_url"
-    }
-  }
+  ]
 }

@@ -87,7 +87,15 @@ export class SocketService {
       return;
     }
 
-    const socketUrl = (import.meta as any).env.VITE_SOCKET_URL || 'http://localhost:3001';
+    // Use Railway URL in production, localhost in development
+    const getSocketURL = () => {
+      if (import.meta.env.PROD) {
+        return 'https://tactical-operator-api.up.railway.app';
+      }
+      return (import.meta as any).env.VITE_SOCKET_URL || 'http://localhost:3001';
+    };
+
+    const socketUrl = getSocketURL();
     
     console.log('🔌 Connecting to Socket.IO server:', socketUrl);
     
