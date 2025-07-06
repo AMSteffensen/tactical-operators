@@ -13,9 +13,9 @@ export default async function handler(req, res) {
     return;
   }
   
-  // Get environment variables
-  const prNumber = process.env.VITE_PR_NUMBER || process.env.VERCEL_GIT_PULL_REQUEST_ID;
-  const vercelEnv = process.env.VITE_VERCEL_ENV || process.env.VERCEL_ENV;
+  // Get environment variables - prioritize native Vercel variables
+  const prNumber = process.env.VERCEL_GIT_PULL_REQUEST_ID || process.env.VITE_PR_NUMBER;
+  const vercelEnv = process.env.VERCEL_ENV || process.env.VITE_VERCEL_ENV;
   
   // Determine Railway URL based on environment
   let railwayBaseUrl;
