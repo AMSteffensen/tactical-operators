@@ -29,7 +29,6 @@ cat > vercel.json << EOF
   "version": 2,
   "name": "tactical-operator-web",
   "framework": "vite",
-  "prebuildCommand": "./scripts/configure-vercel-rewrites.sh",
   "buildCommand": "npm ci && cd shared && npm run build && cd ../web-client && npm ci && npm run build",
   "outputDirectory": "web-client/dist",
   "installCommand": "npm ci",
