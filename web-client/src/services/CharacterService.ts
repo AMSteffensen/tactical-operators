@@ -29,17 +29,27 @@ export interface ApiResponse<T = any> {
 }
 
 class CharacterService {
-  // Development user ID - in production this would come from authentication
-  private readonly DEV_USER_ID = 'dev-user-1';
+  private getAuthHeaders(): Record<string, string> {
+    const token = localStorage.getItem('auth_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return headers;
+  }
 
   private async makeRequest<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/character${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}/api/character${endpoint}`, {
         headers: {
-          'Content-Type': 'application/json',
+          ...this.getAuthHeaders(),
           ...options.headers,
         },
         credentials: 'include', // Include cookies for authentication
@@ -66,7 +76,7 @@ class CharacterService {
    * Get all characters for the current user
    */
   async getCharacters(): Promise<ApiResponse<{ characters: Character[] }>> {
-    return this.makeRequest(`/?userId=${this.DEV_USER_ID}`);
+    return this.makeRequest('/');
   }
 
   /**
@@ -80,15 +90,9 @@ class CharacterService {
    * Create a new character
    */
   async createCharacter(characterData: CreateCharacterData): Promise<ApiResponse<{ character: Character }>> {
-    // Add development user ID to the character data
-    const dataWithUserId = {
-      ...characterData,
-      userId: this.DEV_USER_ID,
-    };
-    
     return this.makeRequest('/', {
       method: 'POST',
-      body: JSON.stringify(dataWithUserId),
+      body: JSON.stringify(characterData),
     });
   }
 

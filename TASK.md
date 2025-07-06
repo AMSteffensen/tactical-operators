@@ -282,6 +282,84 @@ Draft Tasks (Not yet planned)
 
 ---
 
+## 🔄 IN PROGRESS: Player Authentication System (July 6, 2025)
+
+**Implementing complete user authentication and character management system for live deployment.**
+
+### Objective
+- Create secure user registration and login system
+- Implement JWT-based authentication with refresh tokens
+- Connect authentication to character creation and management
+- Enable persistent player sessions and character data
+
+### Components to Implement
+
+#### Backend Authentication API
+- **User Registration**: Email/password with validation
+- **User Login**: JWT token generation and refresh
+- **Password Security**: Bcrypt hashing with salt rounds
+- **Session Management**: JWT refresh token rotation
+- **Profile Management**: User profile CRUD operations
+
+#### Frontend Authentication UI
+- **Login/Register Forms**: Clean, mobile-friendly auth forms
+- **Protected Routes**: Route guards for authenticated content
+- **Session Persistence**: LocalStorage/SessionStorage token management
+- **Auth Context**: React context for global auth state
+- **Character Integration**: Link characters to authenticated users
+
+#### Database Schema Updates
+- **Users Table**: Email, password hash, profile data, timestamps
+- **User-Character Relationship**: Foreign key linking characters to users
+- **Session Management**: Optional refresh token storage
+- **Migration Scripts**: Safe database schema updates
+
+#### Security Features
+- **Input Validation**: Zod schemas for all auth endpoints
+- **Rate Limiting**: Prevent brute force attacks on auth endpoints
+- **CORS Configuration**: Secure cross-origin requests
+- **Environment Security**: JWT secrets and configuration
+- **Password Requirements**: Minimum security standards
+
+### Implementation Plan
+
+#### Phase 1: Backend Authentication (Current)
+- [ ] Create User model in Prisma schema
+- [ ] Implement auth routes (register, login, refresh, profile)
+- [ ] Add JWT middleware for protected routes
+- [ ] Update character endpoints to require authentication
+- [ ] Test auth API with Postman/curl
+
+#### Phase 2: Frontend Authentication
+- [ ] Create authentication context and hooks
+- [ ] Build login and registration forms
+- [ ] Implement protected route components
+- [ ] Add authentication to character management
+- [ ] Update navigation with auth state
+
+#### Phase 3: Integration & Testing
+- [ ] Test complete user flow: register → login → create character → play
+- [ ] Verify session persistence across browser refresh
+- [ ] Test logout and token expiration handling
+- [ ] Security testing and validation
+- [ ] Deploy to production and verify live functionality
+
+### Success Criteria
+- ✅ Users can register and login securely
+- ✅ Characters are linked to authenticated users
+- ✅ Sessions persist across browser sessions
+- ✅ Protected routes prevent unauthorized access
+- ✅ Live deployment works end-to-end
+
+### Security Considerations
+- **Password Hashing**: Bcrypt with 12+ salt rounds
+- **JWT Security**: Short-lived access tokens + refresh tokens
+- **Input Validation**: All inputs validated and sanitized
+- **Rate Limiting**: Prevent abuse of auth endpoints
+- **Environment Security**: All secrets in environment variables
+
+---
+
 ## 🔨 Active Tasks
 
 ### 🏃‍♂️ Immediate Priority (Next Development Session)
