@@ -1,19 +1,9 @@
 import axios from 'axios';
 
 // Create axios instance with base configuration
-// Use relative URLs for development (works with Vite proxy)
-// Use absolute URLs for production (points to Railway API)
-const getBaseURL = () => {
-  // In production, use the Railway API URL
-  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-    return 'https://tactical-operator-api.up.railway.app/api/auth';
-  }
-  // In development, use relative URLs that work with Vite proxy
-  return '/api/auth';
-};
-
+// Always use relative URLs - they work with both Vite proxy (dev) and Vercel rewrites (prod)
 const api = axios.create({
-  baseURL: getBaseURL(),
+  baseURL: '/api/auth',
   headers: {
     'Content-Type': 'application/json',
   },
