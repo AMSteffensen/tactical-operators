@@ -15,27 +15,30 @@ export interface ApiConfig {
 }
 
 export const getApiConfig = (): ApiConfig => {
-  // In preview environments with PR number, use PR-specific Railway URL
+  // For HTTP requests, always use relative URLs so Vercel rewrites can proxy them
+  // Only for WebSocket connections do we need direct URLs
+  
+  // In preview environments with PR number, provide direct URL for WebSocket
   if (env === 'preview' && prNumber) {
-    const baseURL = `https://tactical-operators-tactical-operators-pr-${prNumber}.up.railway.app`;
+    const railwayURL = `https://tactical-operators-tactical-operators-pr-${prNumber}.up.railway.app`;
     return {
-      baseURL,
-      apiURL: `${baseURL}/api`,
-      authURL: `${baseURL}/api/auth`,
-      characterURL: `${baseURL}/api/character`,
-      socketURL: baseURL,
+      baseURL: railwayURL,
+      apiURL: '/api',           // Relative - uses Vercel rewrite
+      authURL: '/api/auth',     // Relative - uses Vercel rewrite  
+      characterURL: '/api/character', // Relative - uses Vercel rewrite
+      socketURL: railwayURL,    // Direct - WebSocket connection
     };
   }
 
-  // In production, use main Railway production URL
+  // In production, provide direct URL for WebSocket
   if (env === 'production') {
-    const baseURL = 'https://tactical-operator-api.up.railway.app';
+    const railwayURL = 'https://tactical-operator-api.up.railway.app';
     return {
-      baseURL,
-      apiURL: `${baseURL}/api`,
-      authURL: `${baseURL}/api/auth`,
-      characterURL: `${baseURL}/api/character`,
-      socketURL: baseURL,
+      baseURL: railwayURL,
+      apiURL: '/api',           // Relative - uses Vercel rewrite
+      authURL: '/api/auth',     // Relative - uses Vercel rewrite
+      characterURL: '/api/character', // Relative - uses Vercel rewrite
+      socketURL: railwayURL,    // Direct - WebSocket connection
     };
   }
 
