@@ -57,15 +57,36 @@ export class SocketService {
   private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
+  private connectionEnabled = true;
   
   constructor() {
-    this.connect();
+    // Check if socket should be disabled (for development/testing)
+    const socketDisabled = (import.meta as any).env.VITE_DISABLE_SOCKET === 'true';
+    this.connectionEnabled = !socketDisabled;
+    
+    // Don't auto-connect in constructor to avoid blocking app startup
+    // Connection will be initiated when actually needed
+  }
+  
+  /**
+   * Enable or disable socket connection
+   */
+  setConnectionEnabled(enabled: boolean) {
+    this.connectionEnabled = enabled;
+    if (!enabled && this.socket) {
+      this.socket.disconnect();
+    }
   }
   
   /**
    * Connect to the Socket.IO server
    */
   private connect() {
+    if (!this.connectionEnabled) {
+      console.log('🔌 Socket connection disabled');
+      return;
+    }
+
     const socketUrl = (import.meta as any).env.VITE_SOCKET_URL || 'http://localhost:3001';
     
     console.log('🔌 Connecting to Socket.IO server:', socketUrl);
@@ -174,9 +195,19 @@ export class SocketService {
   }
   
   /**
+   * Ensure socket is connected (lazy connection)
+   */
+  private ensureConnection() {
+    if (!this.socket && this.connectionEnabled) {
+      this.connect();
+    }
+  }
+  
+  /**
    * Authenticate with the server
    */
   authenticate(token: string) {
+    this.ensureConnection();
     if (this.socket && this.isConnected) {
       this.socket.emit('authenticate', token);
     }

@@ -1,7 +1,9 @@
 // Character API service for frontend
 import { Character, CharacterClass, CharacterStats } from '@shared/types';
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+// Use relative URLs that work with Vite proxy in development
+// and absolute URLs in production
+const API_BASE_URL = '/api/character';
 
 export interface CreateCharacterData {
   name: string;
@@ -47,7 +49,7 @@ class CharacterService {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/character${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           ...this.getAuthHeaders(),
           ...options.headers,

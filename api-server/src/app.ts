@@ -44,13 +44,18 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-});
-app.use('/api/', limiter);
+// Rate limiting (only in production)
+if (process.env.NODE_ENV === 'production') {
+  const limiter = rateLimit({
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'), // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+  });
+  app.use('/api/', limiter);
+  console.log('🛡️ Rate limiting enabled for production');
+} else {
+  console.log('🔓 Rate limiting disabled for development');
+}
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -151,22 +156,17 @@ const PORT = process.env.PORT || 3001;
 // Enhanced server startup with error handling
 const startServer = async () => {
   try {
-    // Initialize database schema at startup (when DATABASE_URL is available)
+    // Test database connection (but don't run migrations)
     if (process.env.DATABASE_URL) {
-      console.log('🗄️ Initializing database schema...');
-      const { execSync } = await import('child_process');
       try {
-        execSync('npx prisma db push --schema=./prisma/schema.prisma', { 
-          stdio: 'inherit',
-          cwd: process.cwd()
-        });
-        console.log('✅ Database schema synchronized');
+        await prisma.$queryRaw`SELECT 1`;
+        console.log('✅ Database connection established');
       } catch (dbError) {
-        console.warn('⚠️ Database schema sync failed (may already exist):', dbError);
+        console.warn('⚠️ Database connection failed:', dbError);
         // Don't exit - server can still start for non-DB endpoints
       }
     } else {
-      console.warn('⚠️ DATABASE_URL not available - skipping database initialization');
+      console.warn('⚠️ DATABASE_URL not available - database features disabled');
     }
 
     server.listen(PORT, () => {
