@@ -1,12 +1,13 @@
 {
   "version": 2,
   "name": "tactical-operator-web",
+  "buildCommand": "npm run build:vercel",
   "builds": [
     {
-      "src": "web-client/package.json",
+      "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
-        "distDir": "dist"
+        "distDir": "web-client/dist"
       }
     }
   ],
