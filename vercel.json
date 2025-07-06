@@ -47,7 +47,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://tactical-operator-api.up.railway.app wss://tactical-operator-api.up.railway.app https://vercel.live"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://tactical-operator-api.up.railway.app wss://tactical-operator-api.up.railway.app https://vercel.live wss://vercel.live"
         }
       ]
     }
