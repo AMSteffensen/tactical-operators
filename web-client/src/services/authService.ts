@@ -4,7 +4,7 @@ import { getApiConfig } from './apiConfig';
 // Create axios instance with dynamic configuration
 const apiConfig = getApiConfig();
 const api = axios.create({
-  baseURL: '', // Use empty baseURL so requests go to current domain
+  baseURL: apiConfig.baseURL, // Use the base URL from config
   headers: {
     'Content-Type': 'application/json',
   },
@@ -69,7 +69,7 @@ export const authService = {
   // Login user
   async login(email: string, password: string): Promise<ApiResponse<LoginResponse>> {
     try {
-      const response = await api.post(`${apiConfig.authURL}/login`, { email, password });
+      const response = await api.post('/api/auth/login', { email, password });
       return response.data;
     } catch (error: any) {
       if (error.response?.data) {
@@ -89,7 +89,7 @@ export const authService = {
     password: string
   ): Promise<ApiResponse<RegisterResponse>> {
     try {
-      const response = await api.post(`${apiConfig.authURL}/register`, { email, username, password });
+      const response = await api.post('/api/auth/register', { email, username, password });
       return response.data;
     } catch (error: any) {
       if (error.response?.data) {
