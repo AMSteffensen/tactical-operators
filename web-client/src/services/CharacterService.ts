@@ -1,10 +1,46 @@
 // Character API service for frontend
+import axios from 'axios';
 import { Character, CharacterClass, CharacterStats } from '@shared/types';
 import { getApiConfig } from './apiConfig';
 
 // Use dynamic API configuration
 const apiConfig = getApiConfig();
-const API_BASE_URL = apiConfig.characterURL;
+
+// Create axios instance for character service
+const api = axios.create({
+  baseURL: apiConfig.baseURL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add request interceptor to include auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor to handle token expiration
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid, clear storage and redirect to login
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export interface CreateCharacterData {
   name: string;
@@ -32,45 +68,27 @@ export interface ApiResponse<T = any> {
 }
 
 class CharacterService {
-  private getAuthHeaders(): Record<string, string> {
-    const token = localStorage.getItem('auth_token');
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    return headers;
-  }
-
   private async makeRequest<T>(
     endpoint: string,
-    options: RequestInit = {}
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+    data?: any
   ): Promise<ApiResponse<T>> {
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        headers: {
-          ...this.getAuthHeaders(),
-          ...options.headers,
-        },
-        credentials: 'include', // Include cookies for authentication
-        ...options,
+      const response = await api({
+        method,
+        url: `/api/character${endpoint}`,
+        data,
       });
-
-      const data = await response.json();
       
-      if (!response.ok) {
-        throw new Error(data.error || `HTTP error! status: ${response.status}`);
-      }
-
-      return data;
-    } catch (error) {
+      return response.data;
+    } catch (error: any) {
       console.error(`CharacterService error (${endpoint}):`, error);
+      if (error.response?.data) {
+        return error.response.data;
+      }
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        error: error.message || 'Unknown error occurred',
       };
     }
   }
@@ -93,10 +111,7 @@ class CharacterService {
    * Create a new character
    */
   async createCharacter(characterData: CreateCharacterData): Promise<ApiResponse<{ character: Character }>> {
-    return this.makeRequest('/', {
-      method: 'POST',
-      body: JSON.stringify(characterData),
-    });
+    return this.makeRequest('/', 'POST', characterData);
   }
 
   /**
@@ -106,19 +121,14 @@ class CharacterService {
     id: string,
     updates: UpdateCharacterData
   ): Promise<ApiResponse<{ character: Character }>> {
-    return this.makeRequest(`/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates),
-    });
+    return this.makeRequest(`/${id}`, 'PUT', updates);
   }
 
   /**
    * Delete a character (soft delete)
    */
   async deleteCharacter(id: string): Promise<ApiResponse> {
-    return this.makeRequest(`/${id}`, {
-      method: 'DELETE',
-    });
+    return this.makeRequest(`/${id}`, 'DELETE');
   }
 
   /**
