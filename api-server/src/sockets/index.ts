@@ -19,7 +19,6 @@ const gameRooms = new Map<string, GameRoom>();
 
 export const setupSocketHandlers = (io: SocketIOServer) => {
   io.on('connection', (socket: AuthenticatedSocket) => {
-    console.log(`🔌 User connected: ${socket.id}`);
 
     // Authentication handler
     socket.on('authenticate', async (token: string) => {
@@ -33,10 +32,8 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
         // Validate JWT token and extract user ID
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
         socket.userId = decoded.id;
-        console.log(`🔐 User authenticated: ${socket.userId}`);
         socket.emit('authenticated', { userId: socket.userId });
       } catch (error) {
-        console.error('Socket authentication failed:', error);
         socket.emit('authenticationFailed', { error: 'Invalid token' });
         socket.disconnect();
       }
@@ -70,7 +67,6 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       socket.join(roomId);
       socket.currentRoom = roomId;
       
-      console.log(`🏠 Room created: ${roomId} by ${socket.userId}`);
       socket.emit('roomCreated', roomId);
     });
 
@@ -87,8 +83,6 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       socket.currentRoom = roomId;
       room.players.add(socket.userId!);
 
-      console.log(`👥 User ${socket.userId} joined room ${roomId}`);
-      
       // Notify others in the room
       socket.to(roomId).emit('playerJoined', { 
         playerId: socket.userId,
@@ -109,13 +103,11 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
         socket.leave(roomId);
         socket.currentRoom = undefined;
         
-        console.log(`👋 User ${socket.id} left room ${roomId}`);
         socket.to(roomId).emit('playerLeft', socket.id);
         
         // Clean up empty rooms
         if (room.players.size === 0) {
           gameRooms.delete(roomId);
-          console.log(`🗑️ Empty room deleted: ${roomId}`);
         }
       }
     });
@@ -143,8 +135,6 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       room.gameState.units[unitId].lastMoved = Date.now();
       room.gameState.units[unitId].movedBy = socket.id;
 
-      console.log(`🎮 Unit ${unitId} moved by ${socket.id} to`, position);
-      
       // Broadcast to all players in room
       socket.to(socket.currentRoom).emit('unitMoved', unitId, position);
       
@@ -166,8 +156,6 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
 
       // TODO: Calculate damage, validate attack
       const damage = Math.floor(Math.random() * 20) + 1; // Random damage for demo
-      
-      console.log(`⚔️ Unit ${attackerId} attacks ${targetId} for ${damage} damage`);
       
       // Broadcast attack to all players
       io.to(socket.currentRoom).emit('unitAttacked', attackerId, targetId, damage);
@@ -196,8 +184,6 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       const nextIndex = (currentIndex + 1) % players.length;
       room.currentTurn = players[nextIndex];
 
-      console.log(`🔄 Turn ended by ${socket.id}, next turn: ${room.currentTurn}`);
-      
       // Notify all players
       io.to(socket.currentRoom).emit('turnEnded', socket.id);
       io.to(socket.currentRoom).emit('turnStarted', room.currentTurn);
@@ -211,7 +197,6 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       }
 
       const timestamp = Date.now();
-      console.log(`💬 Message from ${socket.id}: ${message}`);
       
       // Broadcast message to all players in room
       io.to(socket.currentRoom).emit('message', socket.id, message, timestamp);
@@ -219,7 +204,6 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
 
     // Handle disconnection
     socket.on('disconnect', () => {
-      console.log(`❌ User disconnected: ${socket.id}`);
       
       if (socket.currentRoom) {
         const room = gameRooms.get(socket.currentRoom);
@@ -230,7 +214,6 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
           // Clean up empty rooms
           if (room.players.size === 0) {
             gameRooms.delete(socket.currentRoom);
-            console.log(`🗑️ Empty room deleted: ${socket.currentRoom}`);
           }
         }
       }

@@ -1,6 +1,18 @@
 {
-  "version": 2,
-  "name": "tactical-operator-web",
+  "ver  "env": {
+    "VITE_API_URL": "https://tactical-operators-production.up.railway.app",
+    "VITE_SOCKET_URL": "https://tactical-operators-production.up.railway.app",
+    "VITE_PR_NUMBER": "",
+    "VITE_VERCEL_ENV": "production"
+  },
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://tactical-operators-production.up.railway.app",
+      "VITE_SOCKET_URL": "https://tactical-operators-production.up.railway.app",
+      "VITE_PR_NUMBER": "",
+      "VITE_VERCEL_ENV": "production"
+    }
+  },ame": "tactical-operator-web",
   "framework": "vite",
   "buildCommand": "npm ci && cd shared && npm run build && cd ../web-client && npm ci && npm run build",
   "outputDirectory": "web-client/dist",

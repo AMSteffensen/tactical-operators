@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { ApiConfigDebug } from '../ApiConfigDebug';
 import './AuthForms.css';
 
 export const LoginForm: React.FC = () => {
@@ -17,7 +16,7 @@ export const LoginForm: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -32,7 +31,7 @@ export const LoginForm: React.FC = () => {
 
     try {
       const result = await login(formData.email, formData.password);
-      
+
       if (result.success) {
         navigate('/characters'); // Redirect to character selection
       } else {
@@ -47,7 +46,6 @@ export const LoginForm: React.FC = () => {
 
   return (
     <div className="auth-container">
-      <ApiConfigDebug />
       <div className="auth-card">
         <div className="auth-header">
           <h1>Welcome Back</h1>
@@ -55,11 +53,7 @@ export const LoginForm: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
-          {error && (
-            <div className="error-message">
-              {error}
-            </div>
-          )}
+          {error && <div className="error-message">{error}</div>}
 
           <div className="form-group">
             <label htmlFor="email">Email</label>

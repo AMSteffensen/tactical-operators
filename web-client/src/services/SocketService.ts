@@ -85,15 +85,12 @@ export class SocketService {
    */
   private connect() {
     if (!this.connectionEnabled) {
-      console.log('🔌 Socket connection disabled');
       return;
     }
 
     // Use dynamic API configuration
     const apiConfig = getApiConfig();
     const socketUrl = apiConfig.socketURL;
-    
-    console.log('🔌 Connecting to Socket.IO server:', socketUrl);
     
     this.socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
@@ -111,14 +108,12 @@ export class SocketService {
     if (!this.socket) return;
     
     this.socket.on('connect', () => {
-      console.log('✅ Connected to game server');
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this.emit('connected');
     });
     
     this.socket.on('disconnect', (reason) => {
-      console.log('❌ Disconnected from game server:', reason);
       this.isConnected = false;
       this.emit('disconnected', reason);
       
@@ -132,7 +127,6 @@ export class SocketService {
     });
     
     this.socket.on('connect_error', (error) => {
-      console.error('❌ Connection error:', error);
       this.emit('connectionError', error);
     });
     
@@ -142,12 +136,10 @@ export class SocketService {
     });
     
     this.socket.on('playerJoined', (player) => {
-      console.log('👤 Player joined:', player);
       this.emit('playerJoined', player);
     });
     
     this.socket.on('playerLeft', (playerId) => {
-      console.log('👤 Player left:', playerId);
       this.emit('playerLeft', playerId);
     });
     
@@ -160,12 +152,10 @@ export class SocketService {
     });
     
     this.socket.on('turnStarted', (playerId) => {
-      console.log('🎯 Turn started for player:', playerId);
       this.emit('turnStarted', playerId);
     });
     
     this.socket.on('turnEnded', (playerId) => {
-      console.log('⏰ Turn ended for player:', playerId);
       this.emit('turnEnded', playerId);
     });
     
@@ -174,7 +164,6 @@ export class SocketService {
     });
     
     this.socket.on('error', (message) => {
-      console.error('🚨 Server error:', message);
       this.emit('serverError', message);
     });
   }
@@ -187,13 +176,10 @@ export class SocketService {
       this.reconnectAttempts++;
       const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
       
-      console.log(`🔄 Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-      
       setTimeout(() => {
         this.connect();
       }, delay);
     } else {
-      console.error('❌ Max reconnection attempts reached');
       this.emit('maxReconnectAttemptsReached');
     }
   }
@@ -292,7 +278,7 @@ export class SocketService {
         try {
           listener(...args);
         } catch (error) {
-          console.error(`Error in event listener for ${event}:`, error);
+          // Silently handle event listener errors in production
         }
       });
     }
