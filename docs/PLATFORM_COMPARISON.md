@@ -120,6 +120,44 @@ Single VPS:
 
 ---
 
+## Alternative 5: Render.com Full-Stack ⭐ EXCELLENT CHOICE
+
+### ✅ Benefits
+- **Single platform** - host frontend, backend, and database together
+- **Automatic deployments** from GitHub with PR previews
+- **Built-in PostgreSQL** with automatic backups
+- **Zero configuration** - works out of the box
+- **Simple pricing** - predictable costs
+- **Excellent developer experience** - comparable to Railway but more stable
+
+### 📁 Architecture
+```
+Render Web Service: Frontend (Static Site)
+Render Web Service: API Server (Node.js)
+Render PostgreSQL: Database
+```
+
+### 💰 Cost
+- **Web Service (Static)**: $0/month (free tier)
+- **Web Service (API)**: $7/month (starter tier)
+- **PostgreSQL**: $7/month (starter tier)
+- **Total**: $14/month
+
+### 🚀 Migration Effort
+- **Very Low**: Similar to Railway setup
+- **Database**: Easy migration with pg_dump/restore
+- **Time**: ~2-3 hours
+
+### 🔧 Why Render is Great
+1. **More reliable than Railway** - fewer service interruptions
+2. **Better free tier** - static sites are completely free
+3. **Automatic SSL** and custom domains
+4. **Built-in monitoring** and health checks
+5. **Preview deployments** for every PR
+6. **Simple environment variables** management
+
+---
+
 ## Recommendation: Vercel Full-Stack
 
 ### Why Vercel Full-Stack Wins
@@ -151,5 +189,15 @@ Single VPS:
 | Railway Full-Stack | ⭐⭐ Medium | $5 | ⭐⭐ Medium | ⭐⭐ Medium |
 | DigitalOcean VPS | ⭐ High | $6 | ⭐ High | ⭐ Low |
 | Current (Vercel+Railway) | ⭐ High | $5 | ⭐ Very High | ⭐⭐ Medium |
+| **Render.com Full-Stack** | ⭐⭐ Medium | $14 | ⭐ Medium | ⭐⭐ Medium |
 
-**Winner**: Vercel Full-Stack for this project size and complexity.
+**Winner**: **Render.com Full-Stack** for best balance of simplicity, cost, and reliability.
+
+### Updated Recommendation: Render.com Full-Stack
+
+**Why Render.com is actually the best choice:**
+1. **Solves ALL current issues** - single platform eliminates cross-domain complexity
+2. **More reliable than Railway** - better uptime and stability
+3. **Cheaper than Vercel** - $14/month vs $20/month
+4. **Easier than VPS** - managed infrastructure with simple deployment
+5. **Better than current setup** - eliminates all proxy/CORS issues

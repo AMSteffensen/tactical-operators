@@ -19,13 +19,24 @@ export default async function handler(req, res) {
   
   // Determine Railway URL based on environment
   let railwayBaseUrl;
-  
-  if (vercelEnv === 'preview' && prNumber) {
-    railwayBaseUrl = `https://tactical-operators-tactical-operators-pr-${prNumber}.up.railway.app`;
+
+  if (vercelEnv === 'preview') {
+    if (prNumber) {
+      railwayBaseUrl = `https://tactical-operators-tactical-operators-pr-${prNumber}.up.railway.app`;
+    } else {
+      // In preview, but no PR number: error, do not fallback to prod
+      res.status(500).json({
+        error: 'No PR number detected in Vercel preview environment. Cannot determine Railway PR API URL.',
+        environment: vercelEnv,
+        prNumber: prNumber
+      });
+      return;
+    }
   } else if (vercelEnv === 'production') {
-    railwayBaseUrl = 'https://tactical-operator-api.up.railway.app';
+    railwayBaseUrl = 'https://tactical-operators-production.up.railway.app';
   } else {
-    railwayBaseUrl = 'https://tactical-operator-api.up.railway.app'; // fallback
+    // For local/dev or unknown env, use production as fallback
+    railwayBaseUrl = 'https://tactical-operators-production.up.railway.app';
   }
   
   // Extract the path from the request (everything after /api/proxy)
