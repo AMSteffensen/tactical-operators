@@ -9,14 +9,14 @@ import { ERROR_MESSAGES } from '../../../shared/dist/constants/index.js';
 
 const router = express.Router();
 
-// Rate limiting for authentication endpoints
-const authLimiter = rateLimit({
+// Rate limiting for authentication endpoints (only in production)
+const authLimiter = process.env.NODE_ENV === 'production' ? rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // limit each IP to 5 requests per windowMs for auth endpoints
   message: 'Too many authentication attempts, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
-});
+}) : (req: any, res: any, next: any) => next(); // Pass-through middleware for development
 
 // Validation schemas
 const registerSchema = z.object({

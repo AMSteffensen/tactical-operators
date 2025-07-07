@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { getApiConfig } from './apiConfig';
 
 // Define event types for type safety
 export interface ServerToClientEvents {
@@ -57,18 +58,39 @@ export class SocketService {
   private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
+  private connectionEnabled = true;
   
   constructor() {
-    this.connect();
+    // Check if socket should be disabled (for development/testing)
+    // In development, socket can be disabled via localStorage
+    const socketDisabled = localStorage.getItem('DISABLE_SOCKET') === 'true';
+    this.connectionEnabled = !socketDisabled;
+    
+    // Don't auto-connect in constructor to avoid blocking app startup
+    // Connection will be initiated when actually needed
+  }
+  
+  /**
+   * Enable or disable socket connection
+   */
+  setConnectionEnabled(enabled: boolean) {
+    this.connectionEnabled = enabled;
+    if (!enabled && this.socket) {
+      this.socket.disconnect();
+    }
   }
   
   /**
    * Connect to the Socket.IO server
    */
   private connect() {
-    const socketUrl = (import.meta as any).env.VITE_SOCKET_URL || 'http://localhost:3001';
-    
-    console.log('🔌 Connecting to Socket.IO server:', socketUrl);
+    if (!this.connectionEnabled) {
+      return;
+    }
+
+    // Use dynamic API configuration
+    const apiConfig = getApiConfig();
+    const socketUrl = apiConfig.socketURL;
     
     this.socket = io(socketUrl, {
       transports: ['websocket', 'polling'],
@@ -86,14 +108,12 @@ export class SocketService {
     if (!this.socket) return;
     
     this.socket.on('connect', () => {
-      console.log('✅ Connected to game server');
       this.isConnected = true;
       this.reconnectAttempts = 0;
       this.emit('connected');
     });
     
     this.socket.on('disconnect', (reason) => {
-      console.log('❌ Disconnected from game server:', reason);
       this.isConnected = false;
       this.emit('disconnected', reason);
       
@@ -107,7 +127,6 @@ export class SocketService {
     });
     
     this.socket.on('connect_error', (error) => {
-      console.error('❌ Connection error:', error);
       this.emit('connectionError', error);
     });
     
@@ -117,12 +136,10 @@ export class SocketService {
     });
     
     this.socket.on('playerJoined', (player) => {
-      console.log('👤 Player joined:', player);
       this.emit('playerJoined', player);
     });
     
     this.socket.on('playerLeft', (playerId) => {
-      console.log('👤 Player left:', playerId);
       this.emit('playerLeft', playerId);
     });
     
@@ -135,12 +152,10 @@ export class SocketService {
     });
     
     this.socket.on('turnStarted', (playerId) => {
-      console.log('🎯 Turn started for player:', playerId);
       this.emit('turnStarted', playerId);
     });
     
     this.socket.on('turnEnded', (playerId) => {
-      console.log('⏰ Turn ended for player:', playerId);
       this.emit('turnEnded', playerId);
     });
     
@@ -149,7 +164,6 @@ export class SocketService {
     });
     
     this.socket.on('error', (message) => {
-      console.error('🚨 Server error:', message);
       this.emit('serverError', message);
     });
   }
@@ -162,14 +176,20 @@ export class SocketService {
       this.reconnectAttempts++;
       const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
       
-      console.log(`🔄 Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-      
       setTimeout(() => {
         this.connect();
       }, delay);
     } else {
-      console.error('❌ Max reconnection attempts reached');
       this.emit('maxReconnectAttemptsReached');
+    }
+  }
+  
+  /**
+   * Ensure socket is connected (lazy connection)
+   */
+  private ensureConnection() {
+    if (!this.socket && this.connectionEnabled) {
+      this.connect();
     }
   }
   
@@ -177,6 +197,7 @@ export class SocketService {
    * Authenticate with the server
    */
   authenticate(token: string) {
+    this.ensureConnection();
     if (this.socket && this.isConnected) {
       this.socket.emit('authenticate', token);
     }
@@ -257,7 +278,7 @@ export class SocketService {
         try {
           listener(...args);
         } catch (error) {
-          console.error(`Error in event listener for ${event}:`, error);
+          // Silently handle event listener errors in production
         }
       });
     }

@@ -44,12 +44,7 @@ help: ## Show this help message
 		if ($$0 ~ /docker|db|database/) \
 			printf "  $(YELLOW)%-20s$(RESET) %s\n", $$1, $$2 \
 	}' $(MAKEFILE_LIST) | sed 's/://g' | sed 's/## //'
-	@echo ""
-	@echo "$(GREEN)PM2 Process Management:$(RESET)"
-	@awk '/^[a-zA-Z_-]+:.*?## .*$$/ { \
-		if ($$0 ~ /pm2/) \
-			printf "  $(YELLOW)%-20s$(RESET) %s\n", $$1, $$2 \
-	}' $(MAKEFILE_LIST) | sed 's/://g' | sed 's/## //'
+
 	@echo ""
 	@echo "$(GREEN)Utilities:$(RESET)"
 	@awk '/^[a-zA-Z_-]+:.*?## .*$$/ { \
@@ -84,8 +79,8 @@ install-shared: ## Install shared package dependencies
 	@cd $(SHARED_DIR) && npm install
 
 ## Development
-dev: ## Start development servers with PM2 (recommended)
-	@echo "$(BLUE)🚀 Starting development servers with PM2...$(RESET)"
+dev: ## Start development servers 
+	@echo "$(BLUE)🚀 Starting development servers...$(RESET)"
 	@npm run dev
 
 dev-traditional: ## Start development servers with concurrently (legacy)
@@ -107,56 +102,6 @@ dev-api: ## Start only API server development server
 dev-mobile: ## Start mobile app development server
 	@echo "$(BLUE)📱 Starting mobile app...$(RESET)"
 	@cd $(MOBILE_DIR) && npm start
-
-## PM2 Process Management
-pm2-start: ## Start all services with PM2
-	@echo "$(BLUE)🚀 Starting all services with PM2...$(RESET)"
-	@pm2 start ecosystem.config.json
-	@echo "$(GREEN)✅ All services started with PM2$(RESET)"
-	@echo "$(BLUE)💡 Use 'make pm2-status' to check status$(RESET)"
-
-pm2-stop: ## Stop all PM2 services
-	@echo "$(BLUE)🛑 Stopping all PM2 services...$(RESET)"
-	@pm2 stop ecosystem.config.json
-	@echo "$(GREEN)✅ All PM2 services stopped$(RESET)"
-
-pm2-restart: ## Restart all PM2 services
-	@echo "$(BLUE)🔄 Restarting all PM2 services...$(RESET)"
-	@pm2 restart ecosystem.config.json
-	@echo "$(GREEN)✅ All PM2 services restarted$(RESET)"
-
-pm2-delete: ## Delete all PM2 services
-	@echo "$(BLUE)🗑️  Deleting all PM2 services...$(RESET)"
-	@pm2 delete ecosystem.config.json
-	@echo "$(GREEN)✅ All PM2 services deleted$(RESET)"
-
-pm2-status: ## Show PM2 process status
-	@echo "$(BLUE)📊 PM2 Process Status:$(RESET)"
-	@pm2 status
-
-pm2-logs: ## Show logs for all PM2 services
-	@echo "$(BLUE)📋 PM2 Logs (Press Ctrl+C to exit):$(RESET)"
-	@pm2 logs
-
-pm2-logs-api: ## Show API server logs
-	@echo "$(BLUE)📋 API Server Logs (Press Ctrl+C to exit):$(RESET)"
-	@pm2 logs tactical-api
-
-pm2-logs-web: ## Show web client logs
-	@echo "$(BLUE)📋 Web Client Logs (Press Ctrl+C to exit):$(RESET)"
-	@pm2 logs tactical-web
-
-pm2-logs-db: ## Show database logs
-	@echo "$(BLUE)📋 Database Logs (Press Ctrl+C to exit):$(RESET)"
-	@pm2 logs tactical-database
-
-pm2-reload: ## Gracefully reload all services (0-downtime)
-	@echo "$(BLUE)♻️  Gracefully reloading all services...$(RESET)"
-	@pm2 reload ecosystem.config.json
-	@echo "$(GREEN)✅ All services reloaded$(RESET)"
-
-pm2-dev: pm2-delete docker-db pm2-start ## Full PM2 development setup
-	@echo "$(GREEN)🚀 PM2 development environment ready!$(RESET)"
 
 ## Build & Test
 build: ## Build all packages for production
@@ -305,8 +250,8 @@ logs-api: ## Show API server logs (for dev server)
 	@cd $(API_DIR) && npm run dev --silent
 
 ## Quick Development Commands
-quick-start: dev ## Quick start: Start development environment with PM2
-	@echo "$(GREEN)🚀 Quick start completed with PM2!$(RESET)"
+quick-start: dev ## Quick start: Start development environment
+	@echo "$(GREEN)🚀 Quick start completed!$(RESET)"
 
 quick-build: build test ## Quick build: Build and test all packages
 	@echo "$(GREEN)✅ Quick build completed!$(RESET)"

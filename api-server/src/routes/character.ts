@@ -108,7 +108,10 @@ router.get('/:id', authenticate, async (req: AuthenticatedRequest, res) => {
 // @desc    Create character
 // @route   POST /api/character  
 // @access  Private (or dev mode with userId in body)
-router.post('/', async (req: any, res) => {
+// @desc    Create a new character
+// @route   POST /api/character
+// @access  Private
+router.post('/', authenticate, async (req: AuthenticatedRequest, res) => {
   try {
     let userId: string;
     

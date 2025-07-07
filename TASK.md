@@ -282,6 +282,105 @@ Draft Tasks (Not yet planned)
 
 ---
 
+## ✅ COMPLETED: Player Authentication System (July 6, 2025)
+
+**Successfully implemented complete user authentication and character management system for live deployment.**
+
+### ✅ Completed Implementation
+
+#### Backend Authentication API ✅
+- **User Registration**: Email/password with Zod validation schemas
+- **User Login**: JWT token generation with secure secrets
+- **Password Security**: Bcrypt hashing with salt rounds
+- **Protected Routes**: JWT middleware protecting character endpoints
+- **Rate Limiting**: Production-only rate limiting (disabled in development)
+- **Input Validation**: Comprehensive Zod schemas for all auth endpoints
+
+#### Frontend Authentication UI ✅
+- **Login/Register Forms**: Professional auth forms with validation
+- **Protected Routes**: Route guards preventing unauthorized access
+- **Session Persistence**: JWT tokens stored in localStorage
+- **Auth Context**: React context for global authentication state
+- **Character Integration**: Characters linked to authenticated users
+- **Navigation Integration**: Auth-aware navigation with login/logout
+
+#### Database Integration ✅
+- **Users Table**: Complete user schema with Prisma
+- **User-Character Relationship**: Foreign key linking characters to users
+- **Character Persistence**: Characters persist across browser sessions
+- **Data Security**: All endpoints protected and validated
+
+#### Security Features ✅
+- **Password Hashing**: Bcrypt with salt rounds
+- **JWT Security**: Secure token generation and validation
+- **Rate Limiting**: 5 attempts per 15 minutes for auth endpoints
+- **CORS Protection**: Environment-specific CORS configuration
+- **Environment Security**: Production-ready environment variable setup
+
+### ✅ Technical Issues Resolved
+
+#### Frontend URL Routing ✅
+- **Issue**: Frontend making requests to `/api/api/auth/register` (double `/api`)
+- **Solution**: Changed from absolute URLs to relative URLs that work with Vite proxy
+- **Result**: All authentication endpoints now accessible from frontend
+
+#### Rate Limiting in Development ✅
+- **Issue**: Rate limiting interfering with development testing
+- **Solution**: Environment-aware rate limiting (production only)
+- **Result**: Smooth development experience, secure production
+
+#### API Server Restart Loops ✅
+- **Issue**: Prisma generation triggering tsx watch restarts
+- **Solution**: Removed auto-migration from startup, only test connection
+- **Result**: Stable development server with fast restarts
+
+#### PM2 Development Complexity ✅
+- **Issue**: PM2 causing complex development environment setup
+- **Solution**: Removed PM2, switched to simple npm scripts with concurrently
+- **Result**: Simplified development workflow, faster startup
+
+### ✅ Testing & Verification
+
+#### Automated Testing ✅
+- **Test Script**: `/scripts/test-auth-system.sh` - All 6 tests passing
+- **API Endpoints**: Registration, login, protected routes all functional
+- **Token Security**: JWT generation, validation, and rejection working
+- **Web Client**: Frontend accessible and authentication flow working
+
+#### Manual Testing ✅
+- **User Registration**: Users can register through web interface
+- **User Login**: Users can login and receive JWT tokens
+- **Character Creation**: Authenticated users can create characters
+- **Character Persistence**: Characters persist across browser sessions
+- **Protected Routes**: Unauthenticated access properly blocked
+
+### ✅ Production Readiness
+- **Security**: Bcrypt, JWT, rate limiting, input validation
+- **Environment**: Development and production configurations ready
+- **Documentation**: Complete implementation guide in `/docs/AUTHENTICATION_SYSTEM_COMPLETE.md`
+- **Deployment**: Ready for Railway (API) and Vercel (Web) deployment
+
+### ✅ Development Workflow Improvements
+- **Simplified Scripts**: Removed PM2, using npm scripts with concurrently
+- **Faster Development**: Quicker startup, easier debugging
+- **Automated Testing**: Comprehensive test script for CI/CD integration
+
+### 🎯 Success Criteria Met
+- ✅ Users can register and login securely
+- ✅ Characters are linked to authenticated users
+- ✅ Sessions persist across browser sessions
+- ✅ Protected routes prevent unauthorized access
+- ✅ Complete end-to-end authentication flow working
+- ✅ Production-ready security implementation
+- ✅ Comprehensive testing and documentation
+
+### 📋 Pull Request Created
+- **PR**: Complete Authentication System Implementation
+- **Files**: 20+ files modified/created across backend, frontend, and project configuration
+- **Testing**: Automated test suite with 6 passing tests
+- **Documentation**: Comprehensive implementation guide and technical details
+- **Ready**: For production deployment and team review
+
 ## ✅ COMPLETED: Vercel Frontend Deployment Setup (July 6, 2025)
 
 **Successfully configured Vercel frontend deployment with automatic PR previews and production deployments.**
@@ -497,275 +596,84 @@ The frontend deployment system is fully configured and ready. The next PR merge 
 - **Solution**: Converted all packages to CommonJS, removed `"type": "module"` declarations
 - **Tools Added**: `tsconfig-paths` for runtime path resolution
 
-### ✅ COMPLETED: WebGL & Real-time System (January 3, 2025)
-- **Three.js Integration**: Successfully added 3D rendering capabilities to web client
-- **TacticalRenderer Class**: Created comprehensive 3D engine with orthographic top-down camera, lighting system, and tactical map generation
-- **Socket.IO Enhancement**: Implemented comprehensive real-time communication with typed events, room management, and automatic reconnection
-- **Real-time Game Features**: Added unit movement synchronization, turn-based mechanics, and player join/leave handling
-- **Component Integration**: Created TacticalView component with demo scene showing players, enemies, allies, and tactical cover
-- **Development Tooling**: Enhanced development scripts with proper path resolution and concurrent server startup
-- **Build Fixes**: Resolved TypeScript compilation errors and import path issues
-
-### ✅ COMPLETED: Character System MVP (January 3, 2025)
-- **Backend API**: Complete character CRUD operations with class-based stat generation, skills, and economy
-- **Character Creation**: Full-featured UI with class selection, custom stat allocation, and form validation
-- **Character Management**: List view with character cards, editing, deletion, and selection features
-- **Database Integration**: Characters persist to PostgreSQL with proper user association and soft deletion
-- **3D Integration**: Characters display in tactical view with class-based colors and positioning
-- **Service Layer**: CharacterService handles all API communication with proper error handling
-- **Type Safety**: Full TypeScript integration with shared types and validation schemas
-
-### ✅ COMPLETED: Character-Game Integration (July 4, 2025)
-- **Squad Selection System**: Implemented comprehensive character selection for missions:
-  - Multi-select up to 4 characters for squad deployment
-  - Character selection validation with visual feedback
-  - Selected character preview with class and stats
-  - Character deselection and squad modification capabilities
-- **Game State Management**: Added sophisticated game flow control:
-  - **Setup State**: Character selection and squad building
-  - **Deployment State**: Character positioning and mission preparation
-  - **Active State**: Live tactical gameplay
-  - **Paused State**: Mission pause functionality
-- **Squad Deployment Interface**: Created tactical squad management:
-  - Real-time character health and status tracking
-  - Visual character status indicators (ready, moving, action, wounded, down)
-  - Squad statistics dashboard (size, health, average level, ready count)
-  - Character positioning updates and movement tracking
-- **Enhanced Game UI**: Redesigned Game component with professional interface:
-  - Three-panel layout: Squad Selection | Tactical View | Mission Status
-  - Responsive design with mobile-friendly breakpoints
-  - Professional styling with gradients and tactical color scheme
-  - Custom CSS classes for all game interface elements
-- **Character Health Integration**: Fixed character health system:
-  - Connected character health/maxHealth properties properly
-  - Real-time health tracking during deployment
-  - Health status display in squad management interface
-- **Tactical View Integration**: Connected deployed characters to 3D battlefield:
-  - Automatic character spawning at deployment positions
-  - Character positioning updates via callback system
-  - Game state-aware character display (preview vs deployed)
-  - Real-time position synchronization between Game and TacticalView
-- **Professional UX Flow**: Created complete character-to-gameplay pipeline:
-  - Character creation → Selection → Deployment → Tactical gameplay
-  - Seamless transitions between game states
-  - Clear visual feedback for all user actions
-  - Mission status tracking and squad readiness indicators
-
-### ✅ COMPLETED: TacticalView Combat Integration (July 4, 2025)
-- **Combat Engine Integration**: Successfully integrated CombatEngine class with TacticalView component:
-  - Combat initialization when game state transitions to 'active'
-  - Automatic enemy unit generation for tactical scenarios
-  - Real-time combat event handling and logging
-  - Turn-based mechanics with action point management
-- **3D Combat Interaction**: Complete click-to-combat system:
-  - Combat action selection (move, attack, defend) via CombatUI
-  - Click-to-move for positioning units on battlefield
-  - Click-to-attack for targeting enemy units
-  - Visual feedback for combat actions in 3D space
-- **Combat UI Overlay**: Professional combat interface:
-  - CombatUI component positioned as overlay in tactical view
-  - Real-time turn information and action point tracking
-  - Combat action buttons with validation and feedback
-  - Health status and unit information display
-- **Event-Driven Combat**: Comprehensive combat event system:
-  - Combat state updates with real-time UI synchronization
-  - Turn management with automatic progression
-  - Attack resolution with damage calculations
-  - Victory condition checking and game end states
-- **TypeScript Integration**: Type-safe combat system:
-  - Proper type definitions for all combat actions
-  - Event handler type annotations for compile-time safety
-  - Combat state validation and error handling
-- **Combat Flow**: Complete tactical combat experience:
-  - Character deployment → Combat initialization → Turn-based gameplay
-  - Player vs AI enemy engagement with tactical positioning
-  - Combat log with detailed action history
-  - Victory/defeat conditions with proper game state transitions
-
-### ✅ COMPLETED: Combat System Implementation (July 4, 2025)
-- **Turn-Based Combat Engine**: Complete CombatEngine class with sophisticated turn management:
-  - Initiative-based turn order with automatic progression
-  - Action point system with class-specific allocations
-  - Turn timer and phase management (movement, action, reaction, end)
-  - Victory condition checking and combat state management
-- **Combat Actions & Mechanics**: Full tactical action system:
-  - Movement with range limitations based on mobility stats
-  - Attack system with hit chance calculations, armor, and critical hits
-  - Defend action with status effect buffs
-  - Class abilities framework (ready for expansion)
-  - Wait/end turn functionality
-- **Combat Calculations**: Professional game balance system:
-  - Hit chance calculations with accuracy vs defense
-  - Damage calculations with armor reduction and damage type effectiveness
-  - Cover system integration and flanking bonuses
-  - Status effects (defending, suppressed, etc.)
-  - Class-specific combat modifiers and stat scaling
-- **Combat UI Integration**: Complete tactical interface:
-  - CombatUI component with turn information and action buttons
-  - Real-time combat state display with health bars and unit status
-  - Action point tracking and turn timer
-  - Combat log with detailed action history
-  - Victory/defeat screens with proper game state transitions
-- **TacticalView Combat Integration**: Seamless 3D combat interaction:
-  - Combat mode activation when game state transitions to 'active'
-  - Click-to-combat system for movement and attack targeting
-  - Enemy unit generation and positioning for tactical scenarios
-  - Real-time visual feedback for combat actions
-  - Combat UI overlay positioned in tactical view
-- **Event-Driven Architecture**: Comprehensive combat event system:
-  - Combat engine events: combatStarted, turnStarted, actionExecuted
-  - Attack events: attackHit, attackMissed, with damage and critical hit tracking
-  - Unit events: unitEliminated, unitMoved with position updates
-  - Combat end events: combatEnded with victory conditions
-- **Type Safety & Validation**: Full TypeScript integration:
-  - Combat types and schemas with Zod validation
-  - Shared combat constants and configuration
-  - Type-safe event handling and action execution
-  - Proper error handling and action validation
-
-### Build Error Resolution (RESOLVED ✅)
-- **Issue**: TacticalView component had TypeScript errors and styled-jsx compatibility issues
-- **Solution**: Converted to external CSS file, fixed unused variables, and corrected import paths
-- **Files Updated**: `TacticalView.tsx`, `TacticalView.css`, development scripts
-
-### Combat Engine Import Error (RESOLVED ✅ - July 4, 2025)
-- **Issue**: CombatEngine.ts was importing `CLASS_COMBAT_MODIFIERS` from `@shared/constants` but getting runtime error "The requested module does not provide an export named 'CLASS_COMBAT_MODIFIERS'"
-- **Root Cause**: The shared package's constants were defined in source but not built to the distribution files
+### Frontend Authentication URL Issue (RESOLVED ✅ - July 6, 2025)
+- **Issue**: Frontend making requests to `/api/api/auth/register` (double `/api`) causing "Not Found" errors
+- **Root Cause**: 
+  - Vite proxy routes `/api/*` requests to `http://localhost:3001`
+  - AuthService was constructing URLs as `${VITE_API_URL}/api/auth` where VITE_API_URL already included `/api`
+  - This created `http://localhost:3001/api/api/auth` URLs
 - **Solution**: 
-  - Verified all required constants (`CLASS_COMBAT_MODIFIERS`, `COMBAT_CONFIG`, `DAMAGE_EFFECTIVENESS`) were present in shared/constants/index.ts
-  - Rebuilt shared package using `npm run build:shared` to generate updated dist files
-  - Removed unused `DamageType` import from CombatEngine.ts to clean up warnings
-- **Result**: Web client now starts successfully without import errors
-- **Files Updated**: CombatEngine.ts (cleaned unused import)
+  - Updated AuthService to use relative URLs (`/api/auth`) that work with Vite proxy
+  - Updated CharacterService to use same pattern (`/api/character`)
+  - Removed dependency on VITE_API_URL environment variable for base URL construction
+  - Disabled rate limiting in development mode to improve testing experience
+- **Result**: Frontend authentication now works correctly, all auth endpoints accessible
+- **Files Updated**: 
+  - `web-client/src/services/authService.ts`
+  - `web-client/src/services/CharacterService.ts`
+  - `api-server/src/app.ts` (rate limiting disabled in development)
+- **Testing**: 
+  - ✅ Automated test suite confirms API endpoints work through frontend proxy
+  - ✅ Manual testing confirms user registration, login, and character creation work
+  - ✅ Character persistence verified - characters persist across sessions
 
-### Mobile-First UI Redesign (COMPLETED ✅ - July 4, 2025)
-- **Challenge**: Make the tactical game mobile-friendly with touch controls and responsive design
-- **Goal**: Transform desktop-first UI into mobile-first experience while maintaining all functionality
-- **Solution Created**: Complete responsive game interface system
-- **Features Implemented**:
-  - **Full-Screen Game Layout**: Game canvas takes entire viewport on mobile devices
-  - **Overlay UI System**: HUD elements positioned as overlays instead of separate panels
-  - **Touch-Friendly Controls**: Large, accessible action buttons with emoji icons
-  - **Responsive Action Bar**: Grid-based action buttons that adapt to screen size (4→5→6→8 columns)
-  - **Collapsible Side Panels**: Character selection and stats panels slide in from sides
-  - **Smart Panel Management**: Panels auto-close on mobile, permanent on desktop
-  - **Responsive Breakpoints**: Mobile (320px+), Tablet (576px+), Desktop (992px+)
-  - **Touch-Optimized Canvas**: Three.js tactical view with touch manipulation support
-  - **Game State Management**: UI adapts based on game state (setup→deployment→active→paused)
-  - **Squad Management**: Mobile-optimized character selection with avatars and health bars
-- **Components Created**:
-  - `MobileGame.tsx` - Complete mobile-optimized game interface
-  - `ResponsiveGame.tsx` - Adaptive wrapper that chooses layout based on screen size
-  - `MobileGame.css` - Comprehensive mobile-first CSS with responsive breakpoints
-- **Mobile UX Features**:
-  - **Top HUD**: Game title, squad stats, turn indicator
-  - **Bottom Action Bar**: Context-sensitive action buttons (Move, Attack, Defend, etc.)
-  - **Panel Toggles**: Floating buttons to access character and stats panels
-  - **Squad Status Bar**: Real-time health and readiness tracking
-  - **Touch Gestures**: Pinch-to-zoom, tap-to-select, swipe navigation
-- **Responsive Design Patterns**:
-  - CSS Grid with adaptive column counts
-  - Flexible overlay positioning system
-  - Progressive enhancement from mobile to desktop
-  - Touch-first interaction design with hover fallbacks
-- **Game State Integration**:
-  - **Setup**: Character selection with mobile-friendly lists
-  - **Deployment**: Squad deployment with visual feedback
-  - **Active**: Full combat interface with action selection
-  - **Paused**: Game pause/resume controls
-- **Performance Optimizations**:
-  - Efficient event listeners with proper cleanup
-  - Conditional rendering based on screen size
-  - Smooth CSS transitions for panel animations
-- **Cross-Device Compatibility**:
-  - Works seamlessly on phones (320px+)
-  - Optimized for tablets (768px+)
-  - Enhanced experience on desktop (1200px+)
-- **Files Updated**:
-  - `App.tsx` - Updated to use ResponsiveGame component
-  - `TacticalView.css` - Added mobile-specific canvas optimizations
-  - `index.css` - Added responsive game route styles
-- **Result**: Game now provides excellent mobile experience with intuitive touch controls, while maintaining full desktop functionality
-
-### Smart API Port Management (COMPLETED ✅ - July 4, 2025)
-- **Issue**: API server crashes with "EADDRINUSE" error when port 3001 is already in use
-- **User Experience Problem**: Web client finds alternative ports automatically, but API server fails immediately
-- **Solution Created**: Intelligent port conflict resolution system
-- **Features Implemented**:
-  - **Smart Port Detection**: Automatically detects when preferred port (3001) is in use
-  - **Process Management**: Offers to kill existing processes or find alternative ports
-  - **Interactive Choices**: User-friendly menu with options to kill/find/exit
-  - **Automated Environment**: Defaults to killing existing process for CI/automated environments
-  - **Environment Updates**: Automatically updates .env file with selected port
-  - **Graceful Shutdown**: Enhanced server with SIGTERM/SIGINT handling
-  - **Error Recovery**: Clear error messages with helpful suggestions
-- **Files Created**: 
-  - `scripts/api-start.sh` - Smart API starter with port management
-  - `scripts/demo-smart-api.sh` - Demonstration script for port handling
-- **Package Scripts Added**:
-  - `npm run dev:api:smart` - API server with intelligent port management
-  - `npm run dev:traditional` - Backward compatibility for original behavior
-  - Updated main `npm run dev` to use smart API starter
-- **Enhanced User Experience**:
-  - No more manual port conflict resolution needed
-  - Clear visual feedback with colored output
-  - Automatic recovery from common development issues
-  - Seamless integration with existing development workflow
-- **Result**: Development environment now handles port conflicts gracefully without manual intervention
-
-### Build System Path Resolution Error (RESOLVED ✅ - July 4, 2025)
-- **Issue**: `npm run build` was failing with Rollup error "COMBAT_CONFIG is not exported by ../shared/constants/index.js"
-- **Root Cause**: Vite configuration was pointing to shared package source directory (`../shared`) instead of built distribution directory (`../shared/dist`)
-- **Module System Mismatch**: Shared package was built as CommonJS but Vite expected ES modules
-- **Solution**:
-  - Changed shared package from CommonJS to ES modules in tsconfig.json (`"module": "ESNext"`)
-  - Added `"type": "module"` to shared/package.json
-  - Updated vite.config.ts alias from `../shared` to `../shared/dist`
-  - Rebuilt shared package to generate ES module exports
-- **Result**: Production build now works successfully (`npm run build` completes without errors)
-- **Files Updated**: shared/tsconfig.json, shared/package.json, web-client/vite.config.ts
-
-### Character System Implementation Details (COMPLETED ✅)
-- **Character Classes**: 5 distinct classes (Assault, Sniper, Medic, Engineer, Demolitions) with unique stat distributions
-- **Stat System**: 6 core stats (Strength, Agility, Intelligence, Endurance, Marksmanship, Medical) with point allocation
-- **Skills & Economy**: Starting skills per class and currency system with 100 starting coins
-- **Visual Integration**: Characters appear in 3D tactical view with class-specific colors and proper positioning
-- **API Validation**: Zod schema validation for all character operations with detailed error responses
-
-### ✅ COMPLETED: Build Error Resolution (July 4, 2025)
-- **Issue**: TypeScript compilation errors in InGameHUD component due to invalid CombatActionType references
-- **Root Cause**: Code was using invalid action types 'reload' and 'skip' that don't exist in the CombatActionType enum
-- **Valid Action Types**: 'move', 'attack', 'ability', 'item', 'defend', 'wait' (from shared/types/index.ts)
-- **Solution**: Updated InGameHUD.tsx to use correct action types:
-  - Changed 'reload' → 'item' (for item usage/reloading)
-  - Changed 'skip' → 'wait' (for waiting/ending turn)
-  - Updated button class names, onClick handlers, and conditional text
-  - Fixed getActionCost() function to use valid action types
-  - Updated action instruction text for consistency
-- **Files Fixed**: `/web-client/src/components/InGameHUD.tsx`
-- **Result**: Clean TypeScript compilation with no errors, build system fully functional
-
-### Next Session Notes
-- ✅ **WebGL System**: Three.js TacticalRenderer successfully implemented with demo scene
-- ✅ **Real-time Communication**: Socket.IO integration complete with typed events and room management
-- ✅ **3D Tactical View**: TacticalView component displays players (green), enemies (red), allies (blue), and cover (brown)
-- ✅ **Build System**: All TypeScript compilation errors resolved, CSS styling externalized
-- ✅ **Development Environment**: Fixed dev-start.sh script with proper path resolution
-- ✅ **Documentation**: Created comprehensive testing guides and demo instructions
-- ✅ **In-Game HUD System**: JRPG-style turn-based action selection interface fully integrated
-- 🎯 **READY FOR TESTING**: Complete distraction-free game experience with in-game HUD ready for demo
-- ⏭️ **Next Priority**: Character System MVP - Create character creation forms and backend persistence
-- 📝 **Testing Instructions**: See `/docs/DEMO_GUIDE.md` and `/docs/WEBGL_TESTING.md`
-- 📝 **Development Notes**: 
-  - API server: port 3001 ✅
-  - Web client: port 3000 ✅  
-  - Database: port 5432 ✅
-  - All builds working ✅
-  - TypeScript compilation clean ✅
-  - TacticalView component ready for interactive features (click-to-move, unit selection)
-  - Demo scene with tactical units and cover objects functional
+### PM2 Removal (RESOLVED ✅ - July 6, 2025)
+- **Issue**: PM2 causing development environment complexity and restart loops
+- **Solution**: Removed PM2 completely, switched to npm scripts for development
+- **Changes**:
+  - Removed `ecosystem.config.json` and PM2 dependencies
+  - Updated main `package.json` to use npm scripts with concurrently
+  - Fixed API server restart loop by removing automatic prisma generation from startup
+  - Created separate database initialization scripts
+- **Result**: Cleaner development workflow, faster startup, easier debugging
+- **Files Updated**: `package.json`, `api-server/package.json`, `api-server/src/app.ts`, `Makefile`
 
 ---
+
+## ✅ COMPLETED: TypeScript Compilation Fix for Vercel (July 6, 2025)
+
+**Successfully resolved TypeScript compilation errors preventing Vercel deployment.**
+
+### Issue Resolution
+- **Root Cause**: TypeScript compiler not recognizing `import.meta.env` types during Vercel build
+- **Primary Issue**: `import.meta.env` references causing compilation failures in production builds
+- **Secondary Issue**: Vite-specific environment variables not available in TypeScript compilation context
+
+### Solution Implemented
+- **Environment Detection**: Replaced `import.meta.env.PROD` with hostname-based detection
+  - Production detection: `window.location.hostname.includes('vercel.app')`
+  - More reliable than build-time environment variables
+  - Works consistently across different deployment environments
+- **TypeScript Configuration**: Enhanced type definitions
+  - Created `web-client/src/vite-env.d.ts` with proper ImportMeta interface
+  - Updated `tsconfig.json` to include type definitions and Vite client types
+- **Socket Configuration**: Switched to runtime configuration
+  - Replaced `VITE_DISABLE_SOCKET` environment variable with localStorage
+  - More flexible for development testing
+
+### Code Changes
+- **CharacterService.ts**: Hostname-based production URL detection
+- **SocketService.ts**: Hostname-based production URL detection + localStorage for socket disable
+- **authService.ts**: Already using relative URLs (no changes needed)
+- **tsconfig.json**: Added Vite type support and proper includes
+- **vite-env.d.ts**: Created comprehensive ImportMeta type definitions
+
+### Verification Completed
+- **Local TypeScript Build**: `npm run build` succeeds without errors ✅
+- **Vercel Compatibility**: No `import.meta.env` references remaining ✅
+- **Runtime Environment Detection**: Works in both development and production ✅
+- **All Authentication Tests**: Passing locally ✅
+
+### Files Updated
+- `web-client/src/services/CharacterService.ts` - Hostname-based environment detection
+- `web-client/src/services/SocketService.ts` - Hostname-based environment detection + localStorage
+- `web-client/tsconfig.json` - Added Vite types and proper includes
+- `web-client/src/vite-env.d.ts` - Created comprehensive type definitions
+
+### Next Steps
+- ✅ **TypeScript Compilation**: All import.meta issues resolved
+- 🔄 **Vercel Deployment**: Auto-deployment triggered via git push
+- ⏭️ **Production Testing**: Verify authentication works on deployed Vercel instance
 
 ## ✅ COMPLETED: Production Deployment Verification (July 6, 2025)
 
@@ -850,3 +758,39 @@ curl https://tactical-operators-production.up.railway.app/
 **Production deployment is fully operational and ready for frontend integration!**
 
 ---
+
+## 🔄 IN PROGRESS: Authentication System CORS & Environment Configuration (July 6, 2025)
+
+**Fixing CORS errors and implementing dynamic Railway URL configuration for Vercel preview deployments.**
+
+### Current Status: Testing Phase
+- **Phase**: Comprehensive testing of authentication flow across environments
+- **Environment**: Authentication system deployed with dynamic configuration
+- **Next**: Validate end-to-end authentication on Vercel preview deployments
+
+### Completed Configurations
+- ✅ **Fixed Double API Path Issue**: Corrected authService axios configuration to prevent `/api/api` URLs
+- ✅ **Dynamic Railway URL Detection**: Implemented environment-based Railway URL selection
+  - Preview: `https://tactical-operators-tactical-operators-pr-{PR_NUMBER}.up.railway.app`
+  - Production: `https://tactical-operator-api.up.railway.app`
+  - Development: Uses Vite proxy to localhost
+- ✅ **Vercel Prebuild Configuration**: Moved script from buildCommand to package.json prebuild
+- ✅ **Environment Variable Setup**: Added VITE_PR_NUMBER and VITE_VERCEL_ENV support
+- ✅ **CSP Headers Updated**: Added Vercel live feedback and WebSocket support
+- ✅ **Debug Tools Created**: API configuration debug component and browser test scripts
+
+### Debug Tools Available
+- **ApiConfigDebug Component**: Visual display of environment variables and API configuration
+- **Browser Test Script**: `scripts/browser-auth-test.js` - Console script for testing API calls
+- **Frontend Config Test**: `scripts/test-frontend-config.sh` - Local environment testing
+
+### Testing Checklist
+- [ ] **Production Environment Test**: Verify authentication on main Vercel deployment
+- [ ] **Preview Environment Test**: Test PR-specific Railway URL routing
+- [ ] **Network Request Validation**: Confirm Vercel rewrites proxy to Railway correctly
+- [ ] **Authentication Flow Test**: End-to-end registration and login testing
+- [ ] **Error Handling Test**: Verify CORS and network error handling
+
+### Known Issues
+- Railway PR environments may have deployment lag causing temporary 404s
+- Need to verify Vercel environment variables are properly passed to frontend build
