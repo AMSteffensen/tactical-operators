@@ -2,6 +2,9 @@
 // This runs at /api/proxy and forwards requests to the correct Railway environment
 
 export default async function handler(req, res) {
+  // Debug: Log incoming request URL and method
+  console.log('[PROXY] Incoming:', req.method, req.url);
+
   // Set CORS headers for all requests
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -13,6 +16,12 @@ export default async function handler(req, res) {
     return;
   }
   
+  // Only handle paths that start with /api/proxy
+  if (!req.url.startsWith('/api/proxy')) {
+    res.status(404).json({ error: 'Not Found: This proxy only handles /api/proxy/* requests.' });
+    return;
+  }
+
   // Get environment variables - prioritize native Vercel variables
   const prNumber = process.env.VERCEL_GIT_PULL_REQUEST_ID || process.env.VITE_PR_NUMBER;
   const vercelEnv = process.env.VERCEL_ENV || process.env.VITE_VERCEL_ENV;
@@ -42,8 +51,9 @@ export default async function handler(req, res) {
   // Extract the path from the request (everything after /api/proxy)
   const path = req.url.replace('/api/proxy', '') || '/';
   const targetUrl = `${railwayBaseUrl}/api${path}`;
-  
-  console.log(`[PROXY] ${req.method} ${req.url} -> ${targetUrl}`);
+
+  console.log(`[PROXY] Extracted path: ${path}`);
+  console.log(`[PROXY] Target URL: ${targetUrl}`);
   console.log(`[PROXY] Environment: ${vercelEnv}, PR: ${prNumber}`);
   
   try {
@@ -110,4 +120,14 @@ export default async function handler(req, res) {
       prNumber: prNumber
     });
   }
+}
+
+// If this file is imported as a Vercel Edge Function, also export as default
+export const config = {
+  runtime: 'nodejs',
+};
+
+// Catch-all 404 for unmatched requests (should not be reached)
+export function default404(req, res) {
+  res.status(404).json({ error: 'Not Found: Proxy handler not triggered.' });
 }
