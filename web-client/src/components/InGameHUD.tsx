@@ -1,271 +1,94 @@
-import React, { useState, useEffect } from 'react';
-import { CombatEngine } from '../systems/combat/CombatEngine';
-import { CombatActionType } from '@shared/types';
+import React from 'react';
+import { WeaponDisplay } from './ui/WeaponDisplay';
+import type { Gun } from '@shared/types';
 import './InGameHUD.css';
 
-interface InGameHUDProps {
-  combatEngine: CombatEngine | null;
-  onActionSelected: (action: CombatActionType) => void;
-  gameState: 'active' | 'paused';
-}
+// No props needed for now, inventory will be passed in future
 
-interface ActiveUnit {
-  id: string;
-  name: string;
-  health: number;
-  maxHealth: number;
-  actionPoints: number;
-  maxActionPoints: number;
-  status: string;
-  faction: string;
-}
+export const InGameHUD: React.FC = () => {
+  // Inventory with two weapons
+  const inventory: Gun[] = [
+    {
+      id: 'pistol-001',
+      name: 'Pistol',
+      type: 'weapon',
+      slot: 1,
+      ammo: 7,
+      maxAmmo: 7,
+      icon: '/src/assets/icons/pistol.svg',
+      damage: 15,
+      reloadTime: 1,
+      value: 100,
+      rarity: 'common',
+      weight: 1,
+      properties: {},
+    },
+    {
+      id: 'smg-001',
+      name: 'Submachine Gun',
+      type: 'weapon',
+      slot: 2,
+      ammo: 25,
+      maxAmmo: 25,
+      icon: '/src/assets/icons/smg.svg',
+      damage: 10,
+      reloadTime: 0.5,
+      value: 250,
+      rarity: 'uncommon',
+      weight: 1.2,
+      properties: { fireRate: 'fast' },
+    },
+  ];
 
-export const InGameHUD: React.FC<InGameHUDProps> = ({
-  combatEngine,
-  onActionSelected,
-  gameState
-}) => {
-  const [activeUnit, setActiveUnit] = useState<ActiveUnit | null>(null);
-  const [selectedAction, setSelectedAction] = useState<CombatActionType | null>(null);
-  const [turnTimeRemaining, setTurnTimeRemaining] = useState<number>(30);
-  const [combatState, setCombatState] = useState<any>(null);
+  // Track selected weapon index (0 = pistol, 1 = smg)
+  const [selectedWeapon, setSelectedWeapon] = React.useState(0);
 
-  // Update active unit when combat engine changes
-  useEffect(() => {
-    if (!combatEngine) return;
-
-    const updateActiveUnit = () => {
-      const unit = combatEngine.getActiveUnit();
-      if (unit) {
-        setActiveUnit({
-          id: unit.id,
-          name: unit.name, // Use unit.name instead of unit.characterName
-          health: unit.health,
-          maxHealth: unit.maxHealth,
-          actionPoints: unit.actionPoints,
-          maxActionPoints: unit.maxActionPoints || 3,
-          status: unit.status,
-          faction: unit.faction
-        });
-      } else {
-        setActiveUnit(null);
-      }
+  // Keyboard handler for 1 and 2
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '1') setSelectedWeapon(0);
+      if (e.key === '2') setSelectedWeapon(1);
     };
-
-    const handleStateUpdate = (state: any) => {
-      setCombatState(state);
-      updateActiveUnit();
-    };
-
-    const handleTurnStarted = () => {
-      setSelectedAction(null);
-      setTurnTimeRemaining(30);
-      updateActiveUnit();
-    };
-
-    combatEngine.on('stateUpdated', handleStateUpdate);
-    combatEngine.on('turnStarted', handleTurnStarted);
-
-    // Initial update
-    updateActiveUnit();
-
-    return () => {
-      combatEngine.off('stateUpdated', handleStateUpdate);
-      combatEngine.off('turnStarted', handleTurnStarted);
-    };
-  }, [combatEngine]);
-
-  // Turn timer
-  useEffect(() => {
-    if (gameState !== 'active' || !activeUnit || activeUnit.faction !== 'player') return;
-
-    const timer = setInterval(() => {
-      setTurnTimeRemaining(prev => {
-        if (prev <= 1) {
-          // Auto-skip turn when time runs out - use 'wait' instead of 'skip'
-          handleActionSelect('wait');
-          return 30;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [gameState, activeUnit]);
-
-  const handleActionSelect = (action: CombatActionType) => {
-    setSelectedAction(action);
-    onActionSelected(action);
-  };
-
-  const getActionCost = (action: CombatActionType): number => {
-    switch (action) {
-      case 'move': return 1;
-      case 'attack': return 2;
-      case 'defend': return 1;
-      case 'ability': return 2;
-      case 'item': return 1; // Use 'item' instead of 'reload'
-      case 'wait': return 0; // Use 'wait' instead of 'skip'
-      default: return 1;
-    }
-  };
-
-  const canUseAction = (action: CombatActionType): boolean => {
-    if (!activeUnit) return false;
-    const cost = getActionCost(action);
-    return activeUnit.actionPoints >= cost;
-  };
-
-  const getHealthPercentage = (): number => {
-    if (!activeUnit) return 0;
-    return (activeUnit.health / activeUnit.maxHealth) * 100;
-  };
-
-  const getActionPointsPercentage = (): number => {
-    if (!activeUnit) return 0;
-    return (activeUnit.actionPoints / activeUnit.maxActionPoints) * 100;
-  };
-
-  // Don't show HUD if no active unit or not player's turn
-  if (!activeUnit || activeUnit.faction !== 'player' || gameState !== 'active') {
-    return null;
-  }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
-    <div className="in-game-hud">
-      {/* Unit Status Panel */}
-      <div className="unit-status-panel">
-        <div className="unit-portrait">
-          <div className="portrait-avatar">
-            {activeUnit.name.charAt(0).toUpperCase()}
-          </div>
-          <div className="unit-name">{activeUnit.name}</div>
-        </div>
-
-        <div className="unit-stats">
-          <div className="stat-bar">
-            <div className="stat-label">Health</div>
-            <div className="stat-bar-container">
-              <div 
-                className="stat-bar-fill health"
-                style={{ width: `${getHealthPercentage()}%` }}
-              />
-              <div className="stat-text">
-                {activeUnit.health}/{activeUnit.maxHealth}
-              </div>
+    <div className="in-game-hud vertical-inventory">
+      <div className="inventory-panel">
+        {inventory.map((item, idx) => (
+          <div
+            className={`inventory-item${selectedWeapon === idx ? ' selected' : ''}`}
+            key={item.id}
+            tabIndex={0}
+            aria-label={item.name + (selectedWeapon === idx ? ' (selected)' : '')}
+            style={selectedWeapon === idx ? { boxShadow: '0 0 0 2px #4CAF50, 0 2px 8px rgba(0,0,0,0.15)' } : {}}
+          >
+            <WeaponDisplay
+              weaponName={item.name}
+              className=""
+            />
+            {/* Show slot number for clarity */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 2,
+                left: 4,
+                fontSize: '0.7em',
+                color: selectedWeapon === idx ? '#4CAF50' : '#aaa',
+                fontWeight: 700,
+                background: 'rgba(0,0,0,0.5)',
+                borderRadius: 3,
+                padding: '0 3px',
+                pointerEvents: 'none',
+              }}
+            >
+              {idx + 1}
             </div>
           </div>
-
-          <div className="stat-bar">
-            <div className="stat-label">Action Points</div>
-            <div className="stat-bar-container">
-              <div 
-                className="stat-bar-fill action-points"
-                style={{ width: `${getActionPointsPercentage()}%` }}
-              />
-              <div className="stat-text">
-                {activeUnit.actionPoints}/{activeUnit.maxActionPoints}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="turn-timer">
-          <div className="timer-label">Turn Time</div>
-          <div className={`timer-value ${turnTimeRemaining <= 10 ? 'warning' : ''}`}>
-            {turnTimeRemaining}s
-          </div>
-        </div>
-      </div>
-
-      {/* Action Menu */}
-      <div className="action-menu">
-        <div className="action-menu-title">Choose Action</div>
-        
-        <div className="action-grid">
-          <button
-            className={`action-button move ${selectedAction === 'move' ? 'selected' : ''} ${!canUseAction('move') ? 'disabled' : ''}`}
-            onClick={() => handleActionSelect('move')}
-            disabled={!canUseAction('move')}
-          >
-            <div className="action-icon">🏃</div>
-            <div className="action-name">Move</div>
-            <div className="action-cost">{getActionCost('move')} AP</div>
-          </button>
-
-          <button
-            className={`action-button attack ${selectedAction === 'attack' ? 'selected' : ''} ${!canUseAction('attack') ? 'disabled' : ''}`}
-            onClick={() => handleActionSelect('attack')}
-            disabled={!canUseAction('attack')}
-          >
-            <div className="action-icon">⚔️</div>
-            <div className="action-name">Attack</div>
-            <div className="action-cost">{getActionCost('attack')} AP</div>
-          </button>
-
-          <button
-            className={`action-button defend ${selectedAction === 'defend' ? 'selected' : ''} ${!canUseAction('defend') ? 'disabled' : ''}`}
-            onClick={() => handleActionSelect('defend')}
-            disabled={!canUseAction('defend')}
-          >
-            <div className="action-icon">🛡️</div>
-            <div className="action-name">Defend</div>
-            <div className="action-cost">{getActionCost('defend')} AP</div>
-          </button>
-
-          <button
-            className={`action-button ability ${selectedAction === 'ability' ? 'selected' : ''} ${!canUseAction('ability') ? 'disabled' : ''}`}
-            onClick={() => handleActionSelect('ability')}
-            disabled={!canUseAction('ability')}
-          >
-            <div className="action-icon">✨</div>
-            <div className="action-name">Ability</div>
-            <div className="action-cost">{getActionCost('ability')} AP</div>
-          </button>
-
-          <button
-            className={`action-button item ${selectedAction === 'item' ? 'selected' : ''} ${!canUseAction('item') ? 'disabled' : ''}`}
-            onClick={() => handleActionSelect('item')}
-            disabled={!canUseAction('item')}
-          >
-            <div className="action-icon">🔄</div>
-            <div className="action-name">Use Item</div>
-            <div className="action-cost">{getActionCost('item')} AP</div>
-          </button>
-
-          <button
-            className={`action-button wait ${selectedAction === 'wait' ? 'selected' : ''}`}
-            onClick={() => handleActionSelect('wait')}
-          >
-            <div className="action-icon">⏭️</div>
-            <div className="action-name">Wait</div>
-            <div className="action-cost">Free</div>
-          </button>
-        </div>
-
-        {selectedAction && (
-          <div className="action-instruction">
-            {selectedAction === 'move' && "Click on the battlefield to move"}
-            {selectedAction === 'attack' && "Click on an enemy to attack"}
-            {selectedAction === 'defend' && "Character will take defensive stance"}
-            {selectedAction === 'ability' && "Click to use special ability"}
-            {selectedAction === 'item' && "Character will use an item"}
-            {selectedAction === 'wait' && "End turn without taking action"}
-          </div>
-        )}
-      </div>
-
-      {/* Combat Log */}
-      <div className="combat-log-mini">
-        <div className="log-title">Combat Log</div>
-        <div className="log-entries">
-          {combatState?.lastAction && (
-            <div className="log-entry recent">
-              {combatState.lastAction}
-            </div>
-          )}
-        </div>
+        ))}
       </div>
     </div>
   );
 };
+

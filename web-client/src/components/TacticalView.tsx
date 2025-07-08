@@ -667,10 +667,6 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
                 {weaponInfo && (
                   <WeaponDisplay
                     weaponName="Assault Rifle"
-                    ammo={weaponInfo.ammo}
-                    maxAmmo={weaponInfo.maxAmmo}
-                    isReloading={weaponInfo.isReloading}
-                    canShoot={!weaponInfo.isReloading && weaponInfo.ammo > 0}
                   />
                 )}
               </div>

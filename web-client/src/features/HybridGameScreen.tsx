@@ -5,7 +5,7 @@ import { Character } from '@shared/types';
 import { TacticalView } from '../components/TacticalView';
 import { InGameHUD } from '../components/InGameHUD';
 import { StrategicView } from '../components/StrategicView.tsx';
-import { CombatActionType } from '@shared/types';
+// import { CombatActionType } from '@shared/types';
 import './HybridGameScreen.css';
 
 interface HybridGameScreenProps {
@@ -175,9 +175,7 @@ export const HybridGameScreen: React.FC<HybridGameScreenProps> = ({
   };
 
   // Tactical mode handlers
-  const handleActionSelected = (action: CombatActionType) => {
-    console.log(`🎯 Tactical action selected: ${action}`);
-  };
+  // Removed: handleActionSelected (was only used for InGameHUD props)
 
   // Exit handling
   const handleExit = () => {
@@ -260,11 +258,7 @@ export const HybridGameScreen: React.FC<HybridGameScreenProps> = ({
             gameState="active"
           />
           
-          <InGameHUD
-            combatEngine={combatEngine}
-            onActionSelected={handleActionSelected}
-            gameState="active"
-          />
+          <InGameHUD />
         </div>
       )}
 
