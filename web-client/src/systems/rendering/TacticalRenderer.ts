@@ -54,7 +54,7 @@ export class TacticalRenderer {
 
   // Combat system integration
   private combatSystem: CombatSystem;
-  private crosshairMesh: THREE.Mesh | null = null;
+  //private crosshairMesh: THREE.Mesh | null = null;
   private onShotFiredCallback?: (result: ShotResult) => void;
 
   constructor(container: HTMLElement) {
@@ -67,7 +67,6 @@ export class TacticalRenderer {
     
     // Initialize combat system
     this.combatSystem = new CombatSystem(this.scene);
-    this.setupCombatSystem();
 
     // Start render loop
     this.animate();
@@ -1647,6 +1646,22 @@ export class TacticalRenderer {
   /**
    * Combat system integration methods
    */
+  addCombatUnit(unitId: string, unit: THREE.Object3D, weapon: any, faction: string) {
+    // Restrict faction to valid CombatUnit types
+    const validFaction = (faction === 'player' || faction === 'enemy' || faction === 'neutral') ? faction : 'neutral';
+    const combatUnit = {
+      id: unitId,
+      name: unitId,
+      position: unit.position.clone(),
+      health: weapon.maxAmmo * 3, // Example: health based on weapon, adjust as needed
+      maxHealth: weapon.maxAmmo * 3,
+      weapon: weapon,
+      faction: validFaction as 'player' | 'enemy' | 'neutral',
+      isAlive: true,
+      lastShotTime: 0,
+      isReloading: false,
+      aimDirection: new THREE.Vector3(0, 0, 1)
+    };
     this.combatSystem.addUnit(combatUnit);
     return combatUnit;
   }
@@ -1744,6 +1759,44 @@ export class TacticalRenderer {
     }
   }
 
+  // ...existing code...
+  /**
+   * Reveal fog around a position (called when units move or are selected)
+   * TODO: Implement proper fog revealing based on unit vision
+   */
+  private revealFogAroundPosition(position: THREE.Vector3, radius: number = this.visibilityRadius) {
+    if (!this.fogOfWarEnabled || !this.fogData || !this.fogTexture) {
+      return;
+    }
+
+    // Convert world position to texture coordinates
+    const textureX = Math.floor(((position.x + this.mapWidth / 2) / this.mapWidth) * this.fogResolution);
+    const textureZ = Math.floor(((position.z + this.mapHeight / 2) / this.mapHeight) * this.fogResolution);
+
+    // Reveal area around position
+    const radiusInTexels = Math.floor((radius / Math.max(this.mapWidth, this.mapHeight)) * this.fogResolution);
+
+    for (let x = -radiusInTexels; x <= radiusInTexels; x++) {
+      for (let z = -radiusInTexels; z <= radiusInTexels; z++) {
+        const texX = textureX + x;
+        const texZ = textureZ + z;
+
+        if (texX >= 0 && texX < this.fogResolution && texZ >= 0 && texZ < this.fogResolution) {
+          const distance = Math.sqrt(x * x + z * z);
+          if (distance <= radiusInTexels) {
+            const index = (texZ * this.fogResolution + texX) * 4;
+            // Mark as explored
+            this.exploredAreas.add(`${texX},${texZ}`);
+            // Clear fog (make transparent)
+            this.fogData[index + 3] = Math.max(0, 255 - (255 * (1 - distance / radiusInTexels)));
+          }
+        }
+      }
+    }
+
+    this.fogTexture.needsUpdate = true;
+  }
+
   /**
    * Initialize fog of war system for the battlefield
    * TODO: Implement proper fog of war functionality
@@ -1753,8 +1806,6 @@ export class TacticalRenderer {
       return;
     }
 
-    console.log(`🌫️ Initializing fog of war for ${width}x${height} battlefield`);
-    
     // Store map dimensions for fog calculations
     this.mapWidth = width;
     this.mapHeight = height;
@@ -1798,94 +1849,6 @@ export class TacticalRenderer {
 
     // Initial fog reveal at center (just to demonstrate the system works)
     this.revealFogAroundPosition(new THREE.Vector3(0, 0, 0), this.visibilityRadius);
-
-    console.log('✅ Fog of war system initialized');
-  }
-
-  /**
-   * Reveal fog around a position (called when units move or are selected)
-   * TODO: Implement proper fog revealing based on unit vision
-   */
-  private revealFogAroundPosition(position: THREE.Vector3, radius: number = this.visibilityRadius) {
-    if (!this.fogOfWarEnabled || !this.fogData || !this.fogTexture) {
-      return;
-    }
-
-    // Convert world position to texture coordinates
-    const textureX = Math.floor(((position.x + this.mapWidth / 2) / this.mapWidth) * this.fogResolution);
-    const textureZ = Math.floor(((position.z + this.mapHeight / 2) / this.mapHeight) * this.fogResolution);
-
-    // Reveal area around position
-    const radiusInTexels = Math.floor((radius / Math.max(this.mapWidth, this.mapHeight)) * this.fogResolution);
-
-    for (let x = -radiusInTexels; x <= radiusInTexels; x++) {
-      for (let z = -radiusInTexels; z <= radiusInTexels; z++) {
-        const texX = textureX + x;
-        const texZ = textureZ + z;
-
-        if (texX >= 0 && texX < this.fogResolution && texZ >= 0 && texZ < this.fogResolution) {
-          const distance = Math.sqrt(x * x + z * z);
-          if (distance <= radiusInTexels) {
-
-    // Create fog plane mesh
-    const fogGeometry = new THREE.PlaneGeometry(width, height);
-    const fogMaterial = new THREE.MeshBasicMaterial({
-      map: this.fogTexture,
-      transparent: true,
-      opacity: 0.8,
-      blending: THREE.MultiplyBlending,
-      premultipliedAlpha: true
-    });
-
-    this.fogMesh = new THREE.Mesh(fogGeometry, fogMaterial);
-    this.fogMesh.rotation.x = -Math.PI / 2;
-    this.fogMesh.position.y = 0.1; // Slightly above ground
-    this.fogMesh.userData = { type: 'fog' };
-    this.scene.add(this.fogMesh);
-
-    // Initial fog reveal at center (just to demonstrate the system works)
-    this.revealFogAroundPosition(new THREE.Vector3(0, 0, 0), this.visibilityRadius);
-
-    console.log('✅ Fog of war system initialized');
-  }
-
-  /**
-   * Reveal fog around a position (called when units move or are selected)
-   * TODO: Implement proper fog revealing based on unit vision
-   */
-  private revealFogAroundPosition(position: THREE.Vector3, radius: number = this.visibilityRadius) {
-    if (!this.fogOfWarEnabled || !this.fogData || !this.fogTexture) {
-      return;
-    }
-
-    // Convert world position to texture coordinates
-    const textureX = Math.floor(((position.x + this.mapWidth / 2) / this.mapWidth) * this.fogResolution);
-    const textureZ = Math.floor(((position.z + this.mapHeight / 2) / this.mapHeight) * this.fogResolution);
-
-    // Reveal area around position
-    const radiusInTexels = Math.floor((radius / Math.max(this.mapWidth, this.mapHeight)) * this.fogResolution);
-
-    for (let x = -radiusInTexels; x <= radiusInTexels; x++) {
-      for (let z = -radiusInTexels; z <= radiusInTexels; z++) {
-        const texX = textureX + x;
-        const texZ = textureZ + z;
-
-        if (texX >= 0 && texX < this.fogResolution && texZ >= 0 && texZ < this.fogResolution) {
-          const distance = Math.sqrt(x * x + z * z);
-          if (distance <= radiusInTexels) {
-            const index = (texZ * this.fogResolution + texX) * 4;
-            
-            // Mark as explored
-            this.exploredAreas.add(`${texX},${texZ}`);
-            
-            // Clear fog (make transparent)
-            this.fogData[index + 3] = Math.max(0, 255 - (255 * (1 - distance / radiusInTexels)));
-          }
-        }
-      }
-    }
-
-    this.fogTexture.needsUpdate = true;
   }
 
   /**
