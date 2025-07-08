@@ -1647,53 +1647,6 @@ export class TacticalRenderer {
   /**
    * Combat system integration methods
    */
-  private setupCombatSystem() {
-    // Create crosshair for aiming
-    this.createCrosshair();
-    
-    // Set up combat event callbacks
-    this.setupCombatCallbacks();
-  }
-
-  private createCrosshair() {
-    // Create simple crosshair in the center of the screen
-    const crosshairGeometry = new THREE.RingGeometry(0.05, 0.08, 8);
-    const crosshairMaterial = new THREE.MeshBasicMaterial({
-      color: 0xff0000,
-      transparent: true,
-      opacity: 0.8
-    });
-    
-    this.crosshairMesh = new THREE.Mesh(crosshairGeometry, crosshairMaterial);
-    this.crosshairMesh.position.set(0, 0.5, 0); // Slightly above ground
-    this.crosshairMesh.rotation.x = -Math.PI / 2;
-    this.crosshairMesh.visible = false; // Hidden by default
-    this.scene.add(this.crosshairMesh);
-  }
-
-  private setupCombatCallbacks() {
-    // Set up callbacks for combat events
-    // These will be used to notify the UI about combat results
-  }
-
-  addCombatUnit(unitId: string, unit: THREE.Object3D, weapon: any, faction: 'player' | 'enemy' | 'neutral') {
-    const combatUnit = {
-      id: unitId,
-      name: unit.name,
-      position: unit.position.clone(),
-      health: 100,
-      maxHealth: 100,
-      weapon,
-      faction,
-      isAlive: true,
-      lastShotTime: 0,
-      isReloading: false,
-      aimDirection: new THREE.Vector3(0, 0, 1)
-    };
-    
-    // Set unitId in userData for combat system to find
-    unit.userData.unitId = unitId;
-    
     this.combatSystem.addUnit(combatUnit);
     return combatUnit;
   }
@@ -1826,6 +1779,53 @@ export class TacticalRenderer {
       THREE.RGBAFormat
     );
     this.fogTexture.needsUpdate = true;
+
+    // Create fog plane mesh
+    const fogGeometry = new THREE.PlaneGeometry(width, height);
+    const fogMaterial = new THREE.MeshBasicMaterial({
+      map: this.fogTexture,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.MultiplyBlending,
+      premultipliedAlpha: true
+    });
+
+    this.fogMesh = new THREE.Mesh(fogGeometry, fogMaterial);
+    this.fogMesh.rotation.x = -Math.PI / 2;
+    this.fogMesh.position.y = 0.1; // Slightly above ground
+    this.fogMesh.userData = { type: 'fog' };
+    this.scene.add(this.fogMesh);
+
+    // Initial fog reveal at center (just to demonstrate the system works)
+    this.revealFogAroundPosition(new THREE.Vector3(0, 0, 0), this.visibilityRadius);
+
+    console.log('✅ Fog of war system initialized');
+  }
+
+  /**
+   * Reveal fog around a position (called when units move or are selected)
+   * TODO: Implement proper fog revealing based on unit vision
+   */
+  private revealFogAroundPosition(position: THREE.Vector3, radius: number = this.visibilityRadius) {
+    if (!this.fogOfWarEnabled || !this.fogData || !this.fogTexture) {
+      return;
+    }
+
+    // Convert world position to texture coordinates
+    const textureX = Math.floor(((position.x + this.mapWidth / 2) / this.mapWidth) * this.fogResolution);
+    const textureZ = Math.floor(((position.z + this.mapHeight / 2) / this.mapHeight) * this.fogResolution);
+
+    // Reveal area around position
+    const radiusInTexels = Math.floor((radius / Math.max(this.mapWidth, this.mapHeight)) * this.fogResolution);
+
+    for (let x = -radiusInTexels; x <= radiusInTexels; x++) {
+      for (let z = -radiusInTexels; z <= radiusInTexels; z++) {
+        const texX = textureX + x;
+        const texZ = textureZ + z;
+
+        if (texX >= 0 && texX < this.fogResolution && texZ >= 0 && texZ < this.fogResolution) {
+          const distance = Math.sqrt(x * x + z * z);
+          if (distance <= radiusInTexels) {
 
     // Create fog plane mesh
     const fogGeometry = new THREE.PlaneGeometry(width, height);

@@ -10,6 +10,8 @@ interface AuthenticatedSocket extends Socket {
 interface GameRoom {
   id: string;
   players: Set<string>;
+  playerNames: Map<string, string>; // userId -> name
+  chatHistory: Array<{ senderId: string; senderName: string; text: string; timestamp: number }>;
   gameState: any;
   currentTurn?: string;
 }
@@ -49,13 +51,15 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
     };
 
     // Room management handlers
-    socket.on('createRoom', (campaignId: string) => {
+    socket.on('createRoom', (campaignId: string, playerName: string) => {
       if (!requireAuth(() => {})) return;
 
       const roomId = `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const room: GameRoom = {
         id: roomId,
         players: new Set([socket.userId!]),
+        playerNames: new Map([[socket.userId!, playerName || 'Player']]),
+        chatHistory: [],
         gameState: {
           units: {},
           turn: socket.userId,
@@ -70,7 +74,7 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       socket.emit('roomCreated', roomId);
     });
 
-    socket.on('joinRoom', (roomId: string) => {
+    socket.on('joinRoom', (roomId: string, playerName: string) => {
       if (!requireAuth(() => {})) return;
 
       const room = gameRooms.get(roomId);
@@ -82,18 +86,23 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       socket.join(roomId);
       socket.currentRoom = roomId;
       room.players.add(socket.userId!);
+      room.playerNames.set(socket.userId!, playerName || 'Player');
 
       // Notify others in the room
       socket.to(roomId).emit('playerJoined', { 
         playerId: socket.userId,
-        userId: socket.userId 
+        userId: socket.userId,
+        name: playerName || 'Player'
       });
       
       // Send current game state to new player
       socket.emit('gameStateUpdate', room.gameState);
       
       // Send room info
-      socket.emit('roomJoined', roomId, Array.from(room.players));
+      socket.emit('roomJoined', roomId, Array.from(room.players), Array.from(room.playerNames.entries()));
+      
+      // Send recent chat history
+      socket.emit('chatHistory', room.chatHistory.slice(-50));
     });
 
     socket.on('leaveRoom', (roomId: string) => {
@@ -196,10 +205,26 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
         return;
       }
 
+      const room = gameRooms.get(socket.currentRoom);
+      if (!room) {
+        socket.emit('error', 'Room not found');
+        return;
+      }
+
+      const senderName = room.playerNames.get(socket.userId!) || 'Player';
       const timestamp = Date.now();
-      
+      const chatMsg = {
+        senderId: socket.userId!,
+        senderName,
+        text: message,
+        timestamp
+      };
+
+      // Store in history
+      room.chatHistory.push(chatMsg);
+
       // Broadcast message to all players in room
-      io.to(socket.currentRoom).emit('message', socket.id, message, timestamp);
+      io.to(socket.currentRoom).emit('message', chatMsg);
     });
 
     // Handle disconnection
@@ -208,8 +233,9 @@ export const setupSocketHandlers = (io: SocketIOServer) => {
       if (socket.currentRoom) {
         const room = gameRooms.get(socket.currentRoom);
         if (room) {
-          room.players.delete(socket.id);
-          socket.to(socket.currentRoom).emit('playerLeft', socket.id);
+          room.players.delete(socket.userId!);
+          room.playerNames.delete(socket.userId!);
+          socket.to(socket.currentRoom).emit('playerLeft', socket.userId!);
           
           // Clean up empty rooms
           if (room.players.size === 0) {
