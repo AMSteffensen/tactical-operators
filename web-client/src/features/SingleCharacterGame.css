@@ -1,0 +1,38 @@
+/* Single Character Game Wrapper */
+.single-character-game {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Ensure full screen coverage for all child screens */
+.single-character-game > * {
+  width: 100%;
+  height: 100%;
+}
+
+/* Responsive considerations */
+@media (max-width: 768px) {
+  .single-character-game {
+    height: 100vh;
+    /* Prevent mobile browser chrome from affecting layout */
+    height: -webkit-fill-available;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .single-character-game {
+    filter: contrast(1.2);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .single-character-game * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

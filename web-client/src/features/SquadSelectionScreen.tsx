@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Character } from '@shared/types';
 import { CharacterList } from '../components/CharacterList';
-import { CharacterCreation } from '../components/CharacterCreation';
 import './SquadSelectionScreen.css';
 
 interface SquadSelectionScreenProps {
@@ -14,7 +13,19 @@ export const SquadSelectionScreen: React.FC<SquadSelectionScreenProps> = ({
   onCancel
 }) => {
   const [selectedCharacters, setSelectedCharacters] = useState<Character[]>([]);
-  const [showCharacterCreation, setShowCharacterCreation] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (showMenu) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showMenu]);
 
   const handleCharacterSelect = (character: Character) => {
     setSelectedCharacters(prev => {
@@ -37,24 +48,6 @@ export const SquadSelectionScreen: React.FC<SquadSelectionScreenProps> = ({
     }
     onSquadSelected(selectedCharacters);
   };
-
-  const handleCharacterCreated = () => {
-    setShowCharacterCreation(false);
-    // The CharacterList component will automatically refresh with the new character
-  };
-
-  if (showCharacterCreation) {
-    return (
-      <div className="squad-selection-screen">
-        <div className="creation-container">
-          <CharacterCreation
-            onCharacterCreated={handleCharacterCreated}
-            onCancel={() => setShowCharacterCreation(false)}
-          />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="squad-selection-screen">
@@ -117,12 +110,23 @@ export const SquadSelectionScreen: React.FC<SquadSelectionScreenProps> = ({
       <div className="character-selection-area">
         <div className="selection-controls">
           <h3>Available Characters</h3>
-          <button
-            className="create-character-button"
-            onClick={() => setShowCharacterCreation(true)}
-          >
-            + Create New Character
-          </button>
+          <div className="menu-button-container">
+            <button 
+              className="menu-button" 
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMenu(!showMenu);
+              }}
+            >
+              ☰ Menu
+            </button>
+            {showMenu && (
+              <div className="menu-dropdown">
+                <a href="/" className="menu-item">🏠 Home</a>
+                <a href="/character" className="menu-item">👤 Characters</a>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="character-list-container">

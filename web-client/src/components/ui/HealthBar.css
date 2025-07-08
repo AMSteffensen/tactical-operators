@@ -1,0 +1,104 @@
+/* Health Bar Component */
+.health-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.health-numbers {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.current-health {
+  color: white;
+}
+
+.health-separator {
+  color: #ccc;
+}
+
+.max-health {
+  color: #ccc;
+}
+
+.health-bar-container {
+  position: relative;
+}
+
+.health-bar-background {
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.health-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease, background-color 0.3s ease;
+  border-radius: 3px;
+  position: relative;
+}
+
+.health-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent);
+  border-radius: 3px 3px 0 0;
+}
+
+/* Size variants */
+.health-bar-small .health-numbers {
+  font-size: 0.7rem;
+}
+
+.health-bar-small .health-bar-background {
+  height: 8px;
+}
+
+.health-bar-medium .health-numbers {
+  font-size: 0.8rem;
+}
+
+.health-bar-medium .health-bar-background {
+  height: 12px;
+}
+
+.health-bar-large .health-numbers {
+  font-size: 0.9rem;
+}
+
+.health-bar-large .health-bar-background {
+  height: 16px;
+}
+
+/* Animation for damage */
+@keyframes healthDamage {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.health-bar.damage-animation {
+  animation: healthDamage 0.3s ease-out;
+}
+
+/* Low health warning */
+.health-bar-fill[style*="background-color: rgb(244, 67, 54)"] {
+  animation: lowHealthPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes lowHealthPulse {
+  0% { opacity: 1; }
+  100% { opacity: 0.7; }
+}

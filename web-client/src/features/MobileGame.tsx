@@ -21,6 +21,7 @@ export const MobileGame: React.FC<MobileGameProps> = ({ className = '' }) => {
   const [selectedCharacters, setSelectedCharacters] = useState<Character[]>([]);
   const [deployedCharacters, setDeployedCharacters] = useState<DeployedCharacter[]>([]);
   const [showCharacterCreation, setShowCharacterCreation] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
@@ -217,10 +218,10 @@ export const MobileGame: React.FC<MobileGameProps> = ({ className = '' }) => {
                   </button>
                   <button 
                     className="action-button"
-                    onClick={() => setShowCharacterCreation(true)}
+                    onClick={() => setShowMobileMenu(!showMobileMenu)}
                   >
-                    <div className="action-icon">➕</div>
-                    Create
+                    <div className="action-icon">☰</div>
+                    Menu
                   </button>
                 </>
               )}
@@ -364,7 +365,6 @@ export const MobileGame: React.FC<MobileGameProps> = ({ className = '' }) => {
                   <div className="mobile-character-list">
                     <CharacterList
                       onCharacterSelect={handleCharacterSelect}
-                      onCreateNew={() => setShowCharacterCreation(true)}
                     />
                   </div>
                 </>

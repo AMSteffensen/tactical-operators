@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { TacticalRenderer } from '../systems/rendering/TacticalRenderer';
-import { CombatEngine } from '../systems/combat/CombatEngine';
-import { CombatUI } from './CombatUI';
+import { WEAPONS } from '../systems/combat/CombatSystem';
+import { HealthBar } from './ui/HealthBar';
+import { WeaponDisplay } from './ui/WeaponDisplay';
 import { useSocket } from '../hooks/useSocket';
 import { ConnectionStatus } from './ConnectionStatus';
 import { characterService } from '../services/CharacterService';
-import { Character, CombatActionType } from '@shared/types';
+import { Character } from '@shared/types';
 import './TacticalView.css';
 
 interface TacticalViewProps {
@@ -16,8 +17,7 @@ interface TacticalViewProps {
   gameState?: 'setup' | 'deployment' | 'active' | 'paused';
   onCharacterPositionUpdate?: (characterId: string, position: { x: number; z: number }) => void;
   hideUIElements?: boolean; // For distraction-free gameplay
-  selectedAction?: CombatActionType | null; // Pass selected action from external HUD
-  onCombatEngineCreated?: (engine: CombatEngine) => void; // Callback when combat engine is created
+  singleCharacterMode?: boolean; // Disable character switching for single character gameplay
 }
 
 /**
@@ -31,8 +31,7 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
   gameState = 'setup',
   onCharacterPositionUpdate,
   hideUIElements = false,
-  selectedAction: externalSelectedAction = null,
-  onCombatEngineCreated
+  singleCharacterMode = false
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const rendererRef = useRef<TacticalRenderer | null>(null);
@@ -41,8 +40,10 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
   const [loadingCharacters, setLoadingCharacters] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<any>(null);
   const [gameLog, setGameLog] = useState<string[]>([]);
-  const [combatEngine, setCombatEngine] = useState<CombatEngine | null>(null);
-  const [selectedAction, setSelectedAction] = useState<CombatActionType | null>(null);
+  const [activePlayerUnit, setActivePlayerUnit] = useState<any>(null); // Currently controlled unit
+  const [playerHealth, setPlayerHealth] = useState(100);
+  const [playerMaxHealth, setPlayerMaxHealth] = useState(100);
+  const [weaponInfo, setWeaponInfo] = useState<{ ammo: number; maxAmmo: number; isReloading: boolean } | null>(null);
   const socket = useSocket();
 
   // Real-time event handlers
@@ -159,98 +160,117 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
   };
 
   const setupDemoScene = (renderer: TacticalRenderer) => {
-    // Create large enhanced tactical battlefield
-    renderer.createLargeBattlefield(80, 60);
+    // Create clean test map for collision testing (40x30 units)
+    renderer.createCleanTestMap(40, 30);
     
-    // Add some demo units spread across the larger battlefield
-    const playerPos = new THREE.Vector3(-10, 0, -8);
-    renderer.addUnit(
+    // Add some demo units positioned for the clean test map (40x30)
+    const playerPos = new THREE.Vector3(-3, 0, -12); // Player area (bottom of map)
+    const playerUnit = renderer.addUnit(
       'player1', 
       playerPos, 
       0x00ff00 // Green for player
     );
+    if (playerUnit) {
+      playerUnit.userData.faction = 'player';
+      // Add to combat system with assault rifle
+      renderer.addCombatUnit('player1', playerUnit, WEAPONS.ASSAULT_RIFLE, 'player');
+    }
     
-    const enemyPos = new THREE.Vector3(15, 0, 12);
-    renderer.addUnit(
+    const enemyPos = new THREE.Vector3(8, 0, 10); // Enemy in open area
+    const enemyUnit = renderer.addUnit(
       'enemy1', 
       enemyPos, 
       0xff0000 // Red for enemy
     );
+    if (enemyUnit) {
+      enemyUnit.userData.faction = 'enemy';
+      // Add to combat system with SMG
+      renderer.addCombatUnit('enemy1', enemyUnit, WEAPONS.SMG, 'enemy');
+    }
     
-    const allyPos = new THREE.Vector3(-5, 0, 8);
-    renderer.addUnit(
+    const allyPos = new THREE.Vector3(-8, 0, 5); // AI teammate positioned for testing
+    const allyUnit = renderer.addUnit(
       'ally1', 
       allyPos, 
-      0x0000ff // Blue for ally
+      0x0088ff // Light blue for AI teammate
     );
+    if (allyUnit) {
+      allyUnit.userData.faction = 'ally'; // Mark as AI ally, not player-controlled
+      allyUnit.userData.aiControlled = true;
+      // Add to combat system with pistol
+      renderer.addCombatUnit('ally1', allyUnit, WEAPONS.PISTOL, 'player');
+    }
     
     // Additional units across the battlefield
-    renderer.addUnit(
+    const enemy2Unit = renderer.addUnit(
       'enemy2',
       new THREE.Vector3(25, 0, -15),
       0xff0000
     );
+    if (enemy2Unit) {
+      enemy2Unit.userData.faction = 'enemy';
+      // Add to combat system with assault rifle
+      renderer.addCombatUnit('enemy2', enemy2Unit, WEAPONS.ASSAULT_RIFLE, 'enemy');
+    }
     
-    renderer.addUnit(
+    const enemy3Unit = renderer.addUnit(
       'enemy3',
       new THREE.Vector3(-20, 0, 18),
       0xff0000
     );
+    if (enemy3Unit) {
+      enemy3Unit.userData.faction = 'enemy';
+      // Add to combat system with sniper rifle
+      renderer.addCombatUnit('enemy3', enemy3Unit, WEAPONS.SNIPER_RIFLE, 'enemy');
+    }
     
-    renderer.addUnit(
+    const ally2Unit = renderer.addUnit(
       'ally2',
       new THREE.Vector3(8, 0, -12),
-      0x0000ff
+      0x0088ff // Light blue for AI teammate
     );
+    if (ally2Unit) {
+      ally2Unit.userData.faction = 'ally'; // Mark as AI ally, not player-controlled
+      ally2Unit.userData.aiControlled = true;
+      // Add to combat system with assault rifle
+      renderer.addCombatUnit('ally2', ally2Unit, WEAPONS.ASSAULT_RIFLE, 'player');
+    }
     
-    // Start with player1 selected and camera centered
+    // Start with player1 selected and as the active controllable unit
     setTimeout(() => {
-      const playerUnit = renderer.getScene().getObjectByName('player1');
-      if (playerUnit) {
-        renderer.selectUnit(playerUnit);
+      const playerUnitObj = renderer.getScene().getObjectByName('player1');
+      if (playerUnitObj) {
+        console.log('🎮 Auto-selecting player1 for control');
+        renderer.selectUnit(playerUnitObj);
+        
+        // In single character mode, automatically set as active player unit
+        if (singleCharacterMode) {
+          setActivePlayerUnit({ 
+            id: 'player1', 
+            characterName: 'Player',
+            faction: 'player' 
+          });
+          renderer.setActivePlayerUnit(playerUnitObj);
+          addToGameLog('🎮 You control the GREEN unit only');
+          addToGameLog('🔫 Click RED enemies to shoot them!');
+          addToGameLog('🤖 Light blue units are AI allies');
+          addToGameLog('💥 Watch for hit/miss messages in this log');
+          addToGameLog('⚡ Use WASD keys to move around');
+        }
       }
     }, 500);
     
-    // Add strategic tactical cover/obstacles spread across the battlefield
-    renderer.addObstacle(
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(3, 1.5, 1), // width, height, depth
-      0x8B4513 // Brown for cover
-    );
-    
-    renderer.addObstacle(
-      new THREE.Vector3(12, 0, -8),
-      new THREE.Vector3(2, 2, 4),
-      0x696969 // Gray for wall
-    );
-    
-    renderer.addObstacle(
-      new THREE.Vector3(-15, 0, 5),
-      new THREE.Vector3(2.5, 1, 3),
-      0x8B4513 // Brown for crate
-    );
-    
-    // Additional cover positions across the large map
-    renderer.addObstacle(
-      new THREE.Vector3(20, 0, 10),
-      new THREE.Vector3(4, 1.2, 2),
-      0x8B4513
-    );
-    
-    renderer.addObstacle(
-      new THREE.Vector3(-25, 0, -10),
-      new THREE.Vector3(3, 1.8, 1.5),
-      0x696969
-    );
-    
-    renderer.addObstacle(
-      new THREE.Vector3(8, 0, 20),
-      new THREE.Vector3(2, 1, 4),
-      0x8B4513
-    );
+    // Clean test map - no obstacles initially for clean collision testing
+    // Note: You can add test collision objects using renderer.addTestWall() or renderer.addTestObstacle()
+    console.log('🧪 Clean test map ready for collision testing');
+    console.log('📝 Available test methods:');
+    console.log('   - renderer.addTestWall(position, size, color)');
+    console.log('   - renderer.addTestObstacle(position, radius, color)');
+    console.log('   - renderer.addTestCollisionBoundaries() - adds predefined test walls');
+    console.log('   - renderer.clearTestObjects() - removes all test objects');
     
     // Add initial game log entry
-    addToGameLog('Large tactical battlefield loaded - 80x60 units with multiple zones');
+    addToGameLog('🧪 Clean test map loaded - ready for collision testing (40x30 units)');
   };
 
   // Set up interaction event handlers
@@ -258,29 +278,112 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
     // Handle unit selection
     renderer.setOnUnitSelected((unit) => {
       setSelectedUnit(unit.userData);
-      addToGameLog(`Selected: ${unit.userData.characterName || unit.name}`);
+      
+      // In single character mode, restrict character switching
+      if (singleCharacterMode) {
+        // Only allow meaningful interaction with our own character or targeting enemies
+        if (unit.userData?.faction === 'enemy') {
+          addToGameLog(`🎯 Targeting enemy: ${unit.userData.characterName || unit.name}`);
+          // Don't set as selected unit - just acknowledge targeting
+        } else if (unit.userData?.faction === 'player') {
+          if (!activePlayerUnit) {
+            // First time selecting a player character
+            setActivePlayerUnit(unit.userData);
+            renderer.setActivePlayerUnit(unit);
+            addToGameLog(`🎮 Now controlling: ${unit.userData.characterName || unit.name}`);
+          } else if (activePlayerUnit.id === unit.userData.id) {
+            // Re-selecting our own character
+            addToGameLog(`🎮 Character selected: ${unit.userData.characterName || unit.name}`);
+          } else {
+            // Trying to switch to a different player character (teammate) - blocked
+            addToGameLog(`⚠️ Cannot control teammates in single character mode`);
+            return; // Don't change selection
+          }
+        } else if (unit.userData?.faction === 'ally') {
+          // AI-controlled ally - cannot control
+          addToGameLog(`🤖 AI ally: ${unit.userData.characterName || unit.name} (AI controlled)`);
+          return;
+        } else {
+          // Other units (neutral, etc.) - no interaction
+          addToGameLog(`❌ Cannot interact with ${unit.userData.characterName || unit.name}`);
+          return;
+        }
+      } else {
+        // Multi-character mode (original behavior)
+        if (unit.userData?.faction === 'player') {
+          setActivePlayerUnit(unit.userData);
+          renderer.setActivePlayerUnit(unit);
+          addToGameLog(`🎮 Now controlling: ${unit.userData.characterName || unit.name}`);
+        } else {
+          addToGameLog(`👁️ Selected: ${unit.userData.characterName || unit.name}`);
+        }
+      }
+      
       console.log('🎯 Unit selected:', unit.userData);
     });
     
-    // Handle unit movement
+    // Handle unit movement (continuous real-time movement)
     renderer.setOnUnitMoved((unitId, position) => {
-      addToGameLog(`Unit ${unitId} moved to (${position.x.toFixed(1)}, ${position.z.toFixed(1)})`);
+      // Only log major position changes to avoid spam
+      addToGameLog(`🚶 Unit moving to (${position.x.toFixed(1)}, ${position.z.toFixed(1)})`);
       
-      // Emit movement to other players via socket
+      // Emit movement to other players via socket (throttled)
       socket.moveUnit(unitId, { x: position.x, y: position.y, z: position.z });
       
       // Notify parent component of character position update
       onCharacterPositionUpdate?.(unitId, { x: position.x, z: position.z });
     });
     
-    // Handle ground clicks
+    // Handle ground clicks for movement commands
     renderer.setOnGroundClicked((position) => {
-      if (combatEngine && currentSelectedAction) {
-        handleCombatClick(position);
-      } else if (selectedUnit) {
-        addToGameLog(`Moving ${selectedUnit.characterName || selectedUnit.id} to (${position.x.toFixed(1)}, ${position.z.toFixed(1)})`);
+      if (singleCharacterMode) {
+        // In single character mode, only move our controlled character
+        if (activePlayerUnit) {
+          const activeUnit = renderer.getActivePlayerUnit();
+          if (activeUnit) {
+            renderer.moveUnitToPosition(activeUnit.name, position);
+            addToGameLog(`🎯 Moving to (${position.x.toFixed(1)}, ${position.z.toFixed(1)})`);
+          }
+        } else {
+          addToGameLog(`❌ No character to move`);
+        }
       } else {
-        addToGameLog(`Clicked ground at (${position.x.toFixed(1)}, ${position.z.toFixed(1)})`);
+        // Multi-character mode - move selected unit if it's a player unit
+        if (activePlayerUnit && selectedUnit?.faction === 'player') {
+          const activeUnit = renderer.getActivePlayerUnit();
+          if (activeUnit) {
+            renderer.moveUnitToPosition(activeUnit.name, position);
+            addToGameLog(`🎯 Moving to (${position.x.toFixed(1)}, ${position.z.toFixed(1)})`);
+          }
+        } else {
+          addToGameLog(`👆 Clicked ground at (${position.x.toFixed(1)}, ${position.z.toFixed(1)})`);
+        }
+      }
+    });
+
+    // Set up combat system callbacks
+    renderer.setOnShotFired((result) => {
+      addToGameLog(`🔫 SHOT FIRED! Target: ${result.target?.name || 'unknown'}`);
+      if (result.hit) {
+        addToGameLog(`🎯 HIT! Damage: ${result.damage}`);
+        if (result.target) {
+          // Update health if we hit a target
+          const health = result.target.health;
+          const maxHealth = result.target.maxHealth;
+          
+          if (result.target.faction === 'player') {
+            setPlayerHealth(health);
+            setPlayerMaxHealth(maxHealth);
+          }
+          
+          addToGameLog(`💔 ${result.target.name} health: ${health}/${maxHealth}`);
+          
+          if (!result.target.isAlive) {
+            addToGameLog(`💀 ${result.target.name} eliminated!`);
+          }
+        }
+      } else {
+        addToGameLog(`❌ MISSED! No damage dealt`);
       }
     });
   };
@@ -325,7 +428,7 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
       rendererRef.current?.removeUnit(char.id);
     });
     
-    // Add deployed characters to the tactical view
+    // Add deployed characters to the tactical view with player faction
     deployedCharacters.forEach((deployedChar) => {
       if (deployedChar.deployPosition) {
         const position = new THREE.Vector3(
@@ -334,36 +437,58 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
           deployedChar.deployPosition.z
         );
         
-        rendererRef.current?.addCharacterUnit(deployedChar, position);
+        const unit = rendererRef.current?.addCharacterUnit(deployedChar, position);
+        if (unit) {
+          // Mark as player-controlled unit
+          unit.userData.faction = 'player';
+          
+          // Add to combat system with appropriate weapon based on class
+          let weapon = WEAPONS.ASSAULT_RIFLE; // Default
+          switch (deployedChar.class) {
+            case 'sniper':
+              weapon = WEAPONS.SNIPER_RIFLE;
+              break;
+            case 'medic':
+              weapon = WEAPONS.PISTOL;
+              break;
+            case 'assault':
+            case 'engineer':
+            case 'demolitions':
+            default:
+              weapon = WEAPONS.ASSAULT_RIFLE;
+              break;
+          }
+          
+          rendererRef.current?.addCombatUnit(deployedChar.id, unit, weapon, 'player');
+        }
         console.log(`✅ Deployed character ${deployedChar.name} at position`, deployedChar.deployPosition);
       }
     });
     
     if (deployedCharacters.length > 0) {
-      addToGameLog(`Deployed ${deployedCharacters.length} characters to the battlefield`);
+      addToGameLog(`📍 Deployed ${deployedCharacters.length} player characters`);
+      
+      // Auto-select the first deployed character as the active unit
+      const firstDeployedChar = deployedCharacters[0];
+      if (firstDeployedChar && rendererRef.current) {
+        setTimeout(() => {
+          const unit = rendererRef.current?.getScene().getObjectByName(firstDeployedChar.id);
+          if (unit) {
+            rendererRef.current?.selectUnit(unit);
+          }
+        }, 500);
+      }
     }
   }, [deployedCharacters, isInitialized]);
 
-  // Initialize combat when game state becomes active
+  // Initialize real-time gameplay when game state becomes active
   useEffect(() => {
-    if (gameState === 'active' && deployedCharacters.length > 0 && !combatEngine) {
-      initializeCombat();
+    if (gameState === 'active' && deployedCharacters.length > 0) {
+      initializeRealTimeGameplay();
     }
-  }, [gameState, deployedCharacters, combatEngine]);
+  }, [gameState, deployedCharacters]);
 
-  const initializeCombat = () => {
-    const newCombatEngine = new CombatEngine();
-    
-    // Add player characters to combat
-    deployedCharacters.forEach((char, index) => {
-      const position = new THREE.Vector3(
-        char.deployPosition?.x || -15 + index * 4, // Spread out more on larger battlefield
-        0,
-        char.deployPosition?.z || -25 // Start further back
-      );
-      newCombatEngine.addUnit(char, position, 'player');
-    });
-    
+  const initializeRealTimeGameplay = () => {
     // Add enemy units for demonstration - spread across the larger battlefield
     const enemyPositions = [
       new THREE.Vector3(15, 0, 20),   // Northeast sector
@@ -391,105 +516,82 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
         }
       };
       
-      newCombatEngine.addUnit(enemyChar as any, pos, 'enemy');
+      const unit = rendererRef.current?.addCharacterUnit(enemyChar as any, pos);
+      if (unit) {
+        // Mark as enemy unit
+        unit.userData.faction = 'enemy';
+      }
     });
     
-    // Set up combat event listeners
-    newCombatEngine.on('combatStarted', () => {
-      addToGameLog('Combat has begun!');
-    });
-    
-    newCombatEngine.on('turnStarted', (_turn: any, unit: any) => {
-      addToGameLog(`${unit.name}'s turn (${unit.faction})`);
-    });
-    
-    newCombatEngine.on('actionExecuted', (action: any, unit: any) => {
-      addToGameLog(`${unit.name} used ${action.type}`);
-    });
-    
-    newCombatEngine.on('attackHit', (attackerId: string, targetId: string, damage: number, critical: boolean) => {
-      const attacker = newCombatEngine.getUnit(attackerId);
-      const target = newCombatEngine.getUnit(targetId);
-      addToGameLog(`${attacker?.name} hit ${target?.name} for ${damage} damage${critical ? ' (Critical!)' : ''}`);
-    });
-    
-    newCombatEngine.on('unitEliminated', (unitId: string) => {
-      const unit = newCombatEngine.getUnit(unitId);
-      addToGameLog(`${unit?.name} has been eliminated!`);
-    });
-    
-    newCombatEngine.on('combatEnded', (result: string) => {
-      addToGameLog(`Combat ended: ${result.replace('_', ' ')}`);
-    });
-    
-    setCombatEngine(newCombatEngine);
-    
-    // Notify parent component that combat engine is ready
-    onCombatEngineCreated?.(newCombatEngine);
-    
-    // Start combat after a brief delay
-    setTimeout(() => {
-      newCombatEngine.startCombat();
-    }, 1000);
+    addToGameLog('🎮 Real-time gameplay initialized!');
+    addToGameLog('💡 Use WASD to move your character');
+    addToGameLog('🔫 Left-click on RED enemies to shoot!');
+    addToGameLog('💡 Click ground to move with mouse');
+    if (!singleCharacterMode) {
+      addToGameLog('💡 Click other player units to switch control');
+    }
   };
 
-  const handleActionSelected = (actionType: CombatActionType) => {
-    setSelectedAction(actionType);
-    addToGameLog(`Selected action: ${actionType}`);
-  };
+  // --- ENEMY AI MOVEMENT SYSTEM ---
+  useEffect(() => {
+    if (!isInitialized || !rendererRef.current) return;
+    if (gameState !== 'active') return;
 
-  // Use external action selection if provided (for in-game HUD), otherwise use internal
-  const currentSelectedAction = externalSelectedAction || selectedAction;
+    // Store interval ID for cleanup
+    let aiInterval: ReturnType<typeof setInterval> | null = null;
 
-  const handleCombatClick = (position: THREE.Vector3, clickedObject?: any) => {
-    if (!combatEngine || !currentSelectedAction) return;
-    
-    const activeUnit = combatEngine.getActiveUnit();
-    if (!activeUnit || activeUnit.faction !== 'player') return;
-    
-    // Execute different actions based on selected action type
-    switch (currentSelectedAction) {
-      case 'move':
-        combatEngine.executeAction({
-          type: 'move',
-          actorId: activeUnit.id,
-          targetType: 'ground',
-          targetPosition: { x: position.x, y: position.y, z: position.z },
-          actionPointCost: 1
-        });
-        break;
-        
-      case 'attack':
-        if (clickedObject?.userData?.type === 'unit') {
-          const targetUnit = combatEngine.getUnit(clickedObject.name);
-          if (targetUnit && targetUnit.faction === 'enemy') {
-            combatEngine.executeAction({
-              type: 'attack',
-              actorId: activeUnit.id,
-              targetType: 'unit',
-              targetId: targetUnit.id,
-              actionPointCost: 2,
-              damageType: 'ballistic'
-            });
-          }
+    // Helper to move an enemy unit in a random direction
+    const moveEnemyRandomly = (enemyObj: THREE.Object3D) => {
+      // Pick a random direction and distance
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 2 + Math.random() * 3; // Move 2-5 units
+      const dx = Math.cos(angle) * distance;
+      const dz = Math.sin(angle) * distance;
+      const newPos = enemyObj.position.clone();
+      newPos.x += dx;
+      newPos.z += dz;
+      // Clamp to map bounds (assuming 40x30 test map)
+      newPos.x = Math.max(-19, Math.min(19, newPos.x));
+      newPos.z = Math.max(-14, Math.min(14, newPos.z));
+      rendererRef.current?.moveUnitToPosition(enemyObj.name, newPos);
+    };
+
+    aiInterval = setInterval(() => {
+      if (!rendererRef.current) return;
+      const scene = rendererRef.current.getScene();
+      // Find all enemy units
+      scene.children.forEach(obj => {
+        if (obj.userData?.faction === 'enemy') {
+          // 50% chance to move this tick
+          if (Math.random() < 0.5) moveEnemyRandomly(obj);
         }
-        break;
-        
-      case 'defend':
-        combatEngine.executeAction({
-          type: 'defend',
-          actorId: activeUnit.id,
-          targetType: 'self',
-          actionPointCost: 1
-        });
-        break;
+      });
+    }, 2000); // Every 2 seconds
+
+    return () => {
+      if (aiInterval) clearInterval(aiInterval);
+    };
+  }, [isInitialized, gameState]);
+
+  // Track weapon info for active player unit
+  useEffect(() => {
+    if (activePlayerUnit && rendererRef.current) {
+      const updateWeaponInfo = () => {
+        const info = rendererRef.current?.getUnitWeaponInfo(activePlayerUnit.id || activePlayerUnit.characterName);
+        setWeaponInfo(info || null);
+      };
+      
+      // Update weapon info immediately
+      updateWeaponInfo();
+      
+      // Set up interval to update weapon info regularly (for reload status, ammo changes)
+      const interval = setInterval(updateWeaponInfo, 100);
+      
+      return () => clearInterval(interval);
+    } else {
+      setWeaponInfo(null);
     }
-    
-    // Clear action selection only if using internal selection
-    if (!externalSelectedAction) {
-      setSelectedAction(null);
-    }
-  };
+  }, [activePlayerUnit]);
 
   return (
     <div className={`tactical-view-wrapper ${className} ${hideUIElements ? 'distraction-free' : ''}`}>
@@ -541,13 +643,60 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
         }}
       />
       
-      {/* Combat UI - only show when combat is active and UI elements not hidden */}
-      {!hideUIElements && combatEngine && gameState === 'active' && (
-        <div className="combat-ui-panel">
-          <CombatUI 
-            combatEngine={combatEngine}
-            onActionSelected={handleActionSelected}
-          />
+      {/* Real-time Control Panel - only show when game is active and UI elements not hidden */}
+      {!hideUIElements && gameState === 'active' && (
+        <div className="realtime-control-panel">
+          <div className="control-header">
+            <h4>🎮 Real-time Controls</h4>
+            {activePlayerUnit && (
+              <span className="active-unit-indicator">
+                Controlling: {activePlayerUnit.characterName || activePlayerUnit.id}
+              </span>
+            )}
+          </div>
+          
+          {/* Combat UI Components */}
+          {activePlayerUnit && (
+            <div className="combat-ui-section">
+              <div className="combat-stats">
+                <HealthBar 
+                  health={playerHealth}
+                  maxHealth={playerMaxHealth}
+                  size="medium"
+                />
+                {weaponInfo && (
+                  <WeaponDisplay
+                    weaponName="Assault Rifle"
+                    ammo={weaponInfo.ammo}
+                    maxAmmo={weaponInfo.maxAmmo}
+                    isReloading={weaponInfo.isReloading}
+                    canShoot={!weaponInfo.isReloading && weaponInfo.ammo > 0}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+          
+          <div className="control-instructions">
+            <div className="instruction-row">
+              <span className="key-combo">WASD</span>
+              <span className="description">Move {singleCharacterMode ? 'your character' : 'active character'}</span>
+            </div>
+            {!singleCharacterMode && (
+              <div className="instruction-row">
+                <span className="key-combo">Click Unit</span>
+                <span className="description">Switch control to another character</span>
+              </div>
+            )}
+            <div className="instruction-row">
+              <span className="key-combo">Click Ground</span>
+              <span className="description">Move {singleCharacterMode ? 'your character' : 'active character'} to location</span>
+            </div>
+            <div className="instruction-row">
+              <span className="key-combo">Click Enemy</span>
+              <span className="description">🔫 Shoot at enemy target</span>
+            </div>
+          </div>
         </div>
       )}
       
@@ -564,6 +713,12 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
                 <p><strong>Stats:</strong> STR: {selectedUnit.character.stats?.strength || 0}, 
                    AGI: {selectedUnit.character.stats?.agility || 0}</p>
               </>
+            )}
+            {selectedUnit.faction === 'player' && (
+              <p><strong>🎮 Controllable:</strong> Use WASD to move</p>
+            )}
+            {selectedUnit.faction === 'enemy' && (
+              <p><strong>⚔️ Enemy Unit:</strong> Cannot control</p>
             )}
           </div>
         </div>
@@ -595,8 +750,10 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
         <div className="tactical-view-footer">
           <div className="tactical-info">
             <span>🖱️ Left click: Select units | 🖱️ Right click: Deselect | 🖱️ Click ground: Move selected unit | 🖲️ Mouse wheel: Zoom</span>
+            <br />
+            <span>⌨️ WASD: Move {singleCharacterMode ? 'your character' : 'active character'} (real-time){!singleCharacterMode ? ' | Click player units to switch control' : ''}</span>
             {gameState !== 'setup' && (
-              <span className="game-state-info"> | Game State: {gameState.toUpperCase()}</span>
+              <span className="game-state-info"> | Game Mode: REAL-TIME {gameState.toUpperCase()}</span>
             )}
           </div>
           <div className="tactical-legend">
@@ -633,7 +790,14 @@ export const TacticalView: React.FC<TacticalViewProps> = ({
             )}
             {selectedUnit && (
               <span className="legend-item selected-indicator">
-                <span className="legend-color yellow" /> Selected: {selectedUnit.characterName || selectedUnit.id}
+                <span className="legend-color yellow" /> 
+                {selectedUnit.faction === 'player' ? '🎮 ' : '👁️ '}
+                Selected: {selectedUnit.characterName || selectedUnit.id}
+              </span>
+            )}
+            {activePlayerUnit && activePlayerUnit !== selectedUnit && (
+              <span className="legend-item active-indicator">
+                <span className="legend-color blue" /> 🎮 Controlling: {activePlayerUnit.characterName || activePlayerUnit.id}
               </span>
             )}
           </div>
