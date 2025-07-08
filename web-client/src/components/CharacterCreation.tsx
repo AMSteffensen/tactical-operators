@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CharacterClass, CharacterStats } from '@shared/types';
+import { CharacterClass, CharacterStats, Gun } from '@shared/types';
 import { characterService, CreateCharacterData } from '../services/CharacterService';
 import './CharacterCreation.css';
 
@@ -14,7 +14,24 @@ export const CharacterCreation: React.FC<CharacterCreationProps> = ({
   onCharacterCreated,
   onCancel,
 }) => {
-  const [formData, setFormData] = useState<CreateCharacterData>({
+  const defaultPistol: Gun = {
+    id: 'pistol_1',
+    name: 'Pistol',
+    type: 'weapon',
+    rarity: 'common',
+    durability: 100,
+    weight: 1,
+    value: 50,
+    properties: {},
+    ammo: 12,
+    maxAmmo: 12,
+    reloadTime: 1.5,
+    damage: 10,
+    icon: '/src/assets/icons/pistol.svg',
+    slot: 2,
+  };
+
+  const [formData, setFormData] = useState<CreateCharacterData & { inventory?: any[] }>({
     name: '',
     class: 'assault',
     stats: {
@@ -25,6 +42,7 @@ export const CharacterCreation: React.FC<CharacterCreationProps> = ({
       marksmanship: 50,
       medical: 50,
     },
+    inventory: [defaultPistol],
   });
   
   const [isCreating, setIsCreating] = useState(false);
@@ -87,8 +105,14 @@ export const CharacterCreation: React.FC<CharacterCreationProps> = ({
     setIsCreating(true);
     setError('');
 
+    // Always include the default pistol in inventory
+    const payload = {
+      ...formData,
+      inventory: [defaultPistol],
+    };
+
     try {
-      const response = await characterService.createCharacter(formData);
+      const response = await characterService.createCharacter(payload);
       
       if (response.success && response.data) {
         console.log('✅ Character created successfully:', response.data.character);

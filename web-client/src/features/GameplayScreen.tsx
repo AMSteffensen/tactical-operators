@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Character } from '@shared/types';
 import { TacticalView } from '../components/TacticalView';
+import { InGameHUD } from '../components/InGameHUD';
 import './GameplayScreen.css';
 
 interface DeployedCharacter extends Character {
@@ -77,6 +78,7 @@ export const GameplayScreen: React.FC<GameplayScreenProps> = ({
   return (
     <div className="gameplay-screen">
       {/* Full-screen tactical view with no distractions */}
+
       <div className="game-canvas-full">
         <TacticalView
           deployedCharacters={deployedCharacters}
@@ -89,8 +91,11 @@ export const GameplayScreen: React.FC<GameplayScreenProps> = ({
             console.log(`Character ${characterId} moved to`, position);
           }}
         />
-
-        {/* Tactical view provides real-time combat - no separate HUD needed */}
+        {/* In-Game HUD overlay (must be direct child for CSS overlay to work) */}
+        {/* Only show HUD when game is active */}
+        {gameState === 'active' && (
+          <InGameHUD />
+        )}
       </div>
 
       {/* Minimal overlay - only shown when paused or for critical actions */}

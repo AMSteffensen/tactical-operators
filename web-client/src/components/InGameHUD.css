@@ -1,28 +1,59 @@
 /* In-Game HUD - JRPG Style Turn-Based Interface */
-.in-game-hud {
+
+.in-game-hud.vertical-inventory {
   position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
-  right: 0;
   z-index: 100;
+  height: 100vh;
+  width: 54px;
   background: linear-gradient(
-    to top,
+    to right,
     rgba(0, 0, 0, 0.95) 0%,
     rgba(0, 0, 0, 0.85) 70%,
     rgba(0, 0, 0, 0.4) 90%,
     transparent 100%
   );
   backdrop-filter: blur(10px);
-  border-top: 2px solid rgba(76, 175, 80, 0.6);
+  border-right: 2px solid rgba(76, 175, 80, 0.6);
   color: white;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  display: grid;
-  grid-template-columns: 300px 1fr 250px;
-  grid-template-areas: "status actions log";
-  gap: 20px;
-  padding: 20px;
-  min-height: 180px;
-  animation: slideUpIn 0.5s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 10px 0 10px 2px;
+  min-width: 40px;
+  box-shadow: 2px 0 16px rgba(0,0,0,0.3);
+}
+
+.inventory-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.inventory-item {
+  margin-bottom: 4px;
+  background: rgba(30, 30, 30, 0.7);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  padding: 2px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  position: relative;
+  transition: box-shadow 0.15s, border 0.15s;
+}
+
+.inventory-item.selected {
+  box-shadow: 0 0 0 2px #4CAF50, 0 2px 8px rgba(0,0,0,0.15);
+  border: 1.5px solid #4CAF50;
+  background: rgba(30, 50, 30, 0.85);
+  z-index: 2;
 }
 
 @keyframes slideUpIn {
