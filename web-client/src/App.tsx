@@ -6,16 +6,16 @@ import { Navigation } from './components/navigation/Navigation';
 import { ProtectedRoute, PublicOnlyRoute } from './components/auth/ProtectedRoute';
 import { LoginForm } from './components/auth/LoginForm';
 import { RegisterForm } from './components/auth/RegisterForm';
-import { Header } from './components/Header';
 import { Home } from './features/Home';
 import { ResponsiveGame } from './features/ResponsiveGame';
+import { SingleCharacterGame } from './features/SingleCharacterGame';
 import { Character } from './features/character/Character';
 import { Guild } from './features/guild/Guild';
 import { Campaign } from './features/campaign/Campaign';
 
 function App() {
   const location = useLocation();
-  const isGameRoute = location.pathname === '/game';
+  const isGameRoute = ['/game', '/single-game'].includes(location.pathname);
   const isAuthRoute = ['/login', '/register'].includes(location.pathname);
 
   return (
@@ -23,7 +23,6 @@ function App() {
       <GameProvider>
         <div className="app">
           {!isGameRoute && !isAuthRoute && <Navigation />}
-          {!isGameRoute && !isAuthRoute && <Header />}
           <main className={isGameRoute ? "game-main" : isAuthRoute ? "auth-main" : "main-content"}>
             <Routes>
               {/* Public routes */}
@@ -53,6 +52,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ResponsiveGame />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/single-game" 
+                element={
+                  <ProtectedRoute>
+                    <SingleCharacterGame />
                   </ProtectedRoute>
                 } 
               />

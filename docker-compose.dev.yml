@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: tactical_operator
       POSTGRES_USER: tactical_user
-      POSTGRES_PASSWORD: CHANGE_THIS_PASSWORD_IN_PRODUCTION
+      POSTGRES_PASSWORD: tactical_dev_password
     ports:
       - "5432:5432"
     volumes:

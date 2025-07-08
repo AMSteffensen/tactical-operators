@@ -32,7 +32,7 @@ export const CharacterList: React.FC<CharacterListProps> = ({
 
     try {
       const response = await characterService.getCharacters();
-      
+
       if (response.success && response.data) {
         setCharacters(response.data.characters);
       } else {
@@ -48,17 +48,17 @@ export const CharacterList: React.FC<CharacterListProps> = ({
 
   const handleDeleteCharacter = async (character: Character, e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent character selection
-    
+
     if (!window.confirm(`Are you sure you want to delete "${character.name}"?`)) {
       return;
     }
 
     try {
       const response = await characterService.deleteCharacter(character.id);
-      
+
       if (response.success) {
         // Remove from local state
-        setCharacters(characters.filter(c => c.id !== character.id));
+        setCharacters(characters.filter((c) => c.id !== character.id));
         console.log('✅ Character deleted successfully');
       } else {
         alert(response.error || 'Failed to delete character');
@@ -115,9 +115,11 @@ export const CharacterList: React.FC<CharacterListProps> = ({
     <div className="character-list">
       <div className="character-list-header">
         <h2>Your Characters</h2>
-        <button onClick={onCreateNew} className="create-new-button">
-          + Create New Character
-        </button>
+        {onCreateNew && (
+          <button onClick={onCreateNew} className="create-new-button">
+            + Create New Character
+          </button>
+        )}
       </div>
 
       {characters.length === 0 ? (
@@ -125,9 +127,11 @@ export const CharacterList: React.FC<CharacterListProps> = ({
           <div className="empty-icon">🎯</div>
           <h3>No Characters Yet</h3>
           <p>Create your first tactical operator to begin your missions.</p>
-          <button onClick={onCreateNew} className="create-first-button">
-            Create Your First Character
-          </button>
+          {onCreateNew && (
+            <button onClick={onCreateNew} className="create-first-button">
+              Create Your First Character
+            </button>
+          )}
         </div>
       ) : (
         <div className="characters-grid">
@@ -135,7 +139,7 @@ export const CharacterList: React.FC<CharacterListProps> = ({
             const classInfo = getCharacterClassInfo(character.class);
             const level = formatLevel(character.experience);
             const combatRating = getCombatRating(character);
-            const isSelected = showSelectionState 
+            const isSelected = showSelectionState
               ? selectedCharacterIds.includes(character.id)
               : character.id === selectedCharacterId;
 
@@ -146,10 +150,7 @@ export const CharacterList: React.FC<CharacterListProps> = ({
                 onClick={() => onCharacterSelect?.(character)}
               >
                 <div className="character-header">
-                  <div 
-                    className="character-avatar"
-                    style={{ backgroundColor: classInfo.color }}
-                  >
+                  <div className="character-avatar" style={{ backgroundColor: classInfo.color }}>
                     {character.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="character-info">
@@ -172,7 +173,7 @@ export const CharacterList: React.FC<CharacterListProps> = ({
                   <div className="stat-row">
                     <span className="stat-label">Health:</span>
                     <div className="health-bar">
-                      <div 
+                      <div
                         className="health-fill"
                         style={{ width: `${(character.health / character.maxHealth) * 100}%` }}
                       />
@@ -181,22 +182,20 @@ export const CharacterList: React.FC<CharacterListProps> = ({
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="stat-row">
                     <span className="stat-label">Combat Rating:</span>
                     <span className="stat-value">{combatRating}/100</span>
                   </div>
-                  
+
                   <div className="stat-row">
                     <span className="stat-label">Experience:</span>
                     <span className="stat-value">{character.experience} XP</span>
                   </div>
-                  
+
                   <div className="stat-row">
                     <span className="stat-label">Currency:</span>
-                    <span className="stat-value currency">
-                      💰 {character.economy.currency}
-                    </span>
+                    <span className="stat-value currency">💰 {character.economy.currency}</span>
                   </div>
                 </div>
 
@@ -209,9 +208,7 @@ export const CharacterList: React.FC<CharacterListProps> = ({
                       </span>
                     ))}
                     {character.skills.length > 3 && (
-                      <span className="skill-tag more">
-                        +{character.skills.length - 3} more
-                      </span>
+                      <span className="skill-tag more">+{character.skills.length - 3} more</span>
                     )}
                   </div>
                 </div>

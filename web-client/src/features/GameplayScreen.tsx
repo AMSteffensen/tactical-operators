@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Character, CombatActionType } from '@shared/types';
+import { Character } from '@shared/types';
 import { TacticalView } from '../components/TacticalView';
 import { InGameHUD } from '../components/InGameHUD';
-import { CombatEngine } from '../systems/combat/CombatEngine';
 import './GameplayScreen.css';
 
 interface DeployedCharacter extends Character {
@@ -15,28 +14,17 @@ interface DeployedCharacter extends Character {
 interface GameplayScreenProps {
   deployedCharacters: DeployedCharacter[];
   onExitGame: () => void;
+  singleCharacterMode?: boolean;
 }
 
 export const GameplayScreen: React.FC<GameplayScreenProps> = ({
   deployedCharacters,
-  onExitGame
+  onExitGame,
+  singleCharacterMode = false,
 }) => {
   const [showExitConfirm, setShowExitConfirm] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [gameState, setGameState] = useState<'active' | 'paused'>('active');
-  const [combatEngine, setCombatEngine] = useState<CombatEngine | null>(null);
-  const [selectedAction, setSelectedAction] = useState<CombatActionType | null>(null);
-
-  // Handle action selection from InGameHUD
-  const handleActionSelected = (action: CombatActionType) => {
-    setSelectedAction(action);
-    console.log(`🎮 Action selected: ${action}`);
-  };
-
-  // Handle combat engine updates from TacticalView
-  const handleCombatEngineUpdate = (engine: CombatEngine) => {
-    setCombatEngine(engine);
-  };
 
   // Handle escape key for pause menu
   useEffect(() => {
@@ -90,27 +78,23 @@ export const GameplayScreen: React.FC<GameplayScreenProps> = ({
   return (
     <div className="gameplay-screen">
       {/* Full-screen tactical view with no distractions */}
+
       <div className="game-canvas-full">
         <TacticalView
           deployedCharacters={deployedCharacters}
           gameState={gameState}
           height="100vh"
           hideUIElements={true}
-          selectedAction={selectedAction}
-          onCombatEngineCreated={handleCombatEngineUpdate}
+          singleCharacterMode={singleCharacterMode}
           onCharacterPositionUpdate={(characterId, position) => {
             // Handle character movement updates if needed
             console.log(`Character ${characterId} moved to`, position);
           }}
         />
-        
-        {/* In-Game HUD - JRPG-style action selection rendered over 3D view */}
-        {combatEngine && gameState === 'active' && (
-          <InGameHUD
-            combatEngine={combatEngine}
-            onActionSelected={handleActionSelected}
-            gameState={gameState}
-          />
+        {/* In-Game HUD overlay (must be direct child for CSS overlay to work) */}
+        {/* Only show HUD when game is active */}
+        {gameState === 'active' && (
+          <InGameHUD />
         )}
       </div>
 
@@ -120,28 +104,17 @@ export const GameplayScreen: React.FC<GameplayScreenProps> = ({
           <div className="pause-menu">
             <h2>Game Paused</h2>
             <div className="pause-actions">
-              <button
-                className="resume-button"
-                onClick={() => setGameState('active')}
-              >
+              <button className="resume-button" onClick={() => setGameState('active')}>
                 ▶️ Resume Game
               </button>
-              <button
-                className="fullscreen-button"
-                onClick={handleFullscreenToggle}
-              >
+              <button className="fullscreen-button" onClick={handleFullscreenToggle}>
                 {isFullscreen ? '🔲 Exit Fullscreen' : '⛶ Fullscreen'}
               </button>
-              <button
-                className="exit-button"
-                onClick={() => setShowExitConfirm(true)}
-              >
+              <button className="exit-button" onClick={() => setShowExitConfirm(true)}>
                 🚪 Exit Mission
               </button>
             </div>
-            <div className="pause-hint">
-              Press ESC to resume
-            </div>
+            <div className="pause-hint">Press ESC to resume</div>
           </div>
         </div>
       )}
@@ -153,16 +126,10 @@ export const GameplayScreen: React.FC<GameplayScreenProps> = ({
             <h3>Exit Mission?</h3>
             <p>Are you sure you want to exit the current mission? Your progress may be lost.</p>
             <div className="exit-actions">
-              <button
-                className="cancel-exit-button"
-                onClick={() => setShowExitConfirm(false)}
-              >
+              <button className="cancel-exit-button" onClick={() => setShowExitConfirm(false)}>
                 Cancel
               </button>
-              <button
-                className="confirm-exit-button"
-                onClick={confirmExit}
-              >
+              <button className="confirm-exit-button" onClick={confirmExit}>
                 Exit Mission
               </button>
             </div>
@@ -171,11 +138,7 @@ export const GameplayScreen: React.FC<GameplayScreenProps> = ({
       )}
 
       {/* Minimal UI hint - only visible briefly at start */}
-      {gameState === 'active' && (
-        <div className="ui-hint">
-          Press ESC to pause
-        </div>
-      )}
+      {gameState === 'active' && <div className="ui-hint">Press ESC to pause</div>}
     </div>
   );
 };

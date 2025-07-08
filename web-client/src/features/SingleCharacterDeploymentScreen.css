@@ -1,0 +1,303 @@
+/* Single Character Deployment Screen */
+.single-character-deployment-screen {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f1419, #1a2332);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Header */
+.deployment-header {
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.5rem 2rem;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.back-button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.back-button:hover {
+  border-color: #4CAF50;
+  background: rgba(76, 175, 80, 0.1);
+}
+
+.deployment-title {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+  flex: 1;
+}
+
+.deployment-subtitle {
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+/* Deployment Content */
+.deployment-content {
+  flex: 1;
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  min-height: 0;
+}
+
+/* Character Info Panel */
+.character-info-panel {
+  width: 320px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1.5rem;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.character-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.character-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.3rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.character-details {
+  flex: 1;
+}
+
+.character-name {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.2rem;
+  color: white;
+  font-weight: 600;
+}
+
+.character-class {
+  margin: 0 0 0.25rem 0;
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+.character-health {
+  margin: 0;
+  color: #ccc;
+  font-size: 0.9rem;
+}
+
+/* Deployment Status */
+.deployment-status h4,
+.deployment-instructions h4 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: white;
+  font-weight: 600;
+}
+
+.status-deployed,
+.status-not-deployed {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.status-icon {
+  font-size: 1.2rem;
+  margin-top: 0.1rem;
+}
+
+.status-deployed .status-icon {
+  color: #4CAF50;
+}
+
+.status-not-deployed .status-icon {
+  color: #FFA726;
+}
+
+.status-info p {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.status-info p:first-child {
+  font-weight: 600;
+  color: white;
+}
+
+.status-info p:not(:first-child) {
+  color: #ccc;
+}
+
+/* Deployment Instructions */
+.deployment-instructions ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #ccc;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.deployment-instructions li {
+  margin-bottom: 0.5rem;
+}
+
+/* Deployment Actions */
+.deployment-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auto-deploy-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.auto-deploy-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.start-mission-button {
+  background: linear-gradient(45deg, #4CAF50, #66BB6A);
+  border: none;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.start-mission-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.4);
+}
+
+.start-mission-button:disabled {
+  background: #666;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Tactical Map */
+.tactical-map-container {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .deployment-content {
+    flex-direction: column;
+  }
+  
+  .character-info-panel {
+    width: 100%;
+  }
+  
+  .tactical-map-container {
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .deployment-header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .deployment-title {
+    font-size: 1.5rem;
+  }
+  
+  .deployment-content {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .character-info-panel {
+    padding: 1rem;
+  }
+  
+  .character-summary {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+  
+  .tactical-map-container {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .deployment-header {
+    padding: 0.75rem;
+  }
+  
+  .deployment-title {
+    font-size: 1.3rem;
+  }
+  
+  .deployment-content {
+    padding: 0.5rem;
+  }
+  
+  .character-info-panel {
+    padding: 0.75rem;
+    gap: 1rem;
+  }
+  
+  .deployment-actions {
+    gap: 0.5rem;
+  }
+  
+  .auto-deploy-button,
+  .start-mission-button {
+    padding: 0.75rem;
+  }
+}

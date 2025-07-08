@@ -300,6 +300,129 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
+/* Combat UI Section */
+.combat-ui-section {
+  margin: 12px 0;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.combat-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Responsive layout for combat stats */
+@media (min-width: 768px) {
+  .combat-stats {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* Real-time control panel styles */
+.realtime-control-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(42, 42, 42, 0.9);
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 280px;
+  backdrop-filter: blur(5px);
+  z-index: 10;
+}
+
+.control-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.control-header h4 {
+  margin: 0;
+  color: #00aaff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.active-unit-indicator {
+  background: rgba(0, 170, 255, 0.2);
+  color: #00aaff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid rgba(0, 170, 255, 0.3);
+}
+
+.control-instructions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.instruction-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.key-combo {
+  background: #444;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 80px;
+  text-align: center;
+}
+
+.description {
+  color: #ccc;
+  font-size: 12px;
+  flex: 1;
+  text-align: right;
+}
+
+/* Enhanced legend indicators for real-time mode */
+.legend-item.active-indicator {
+  background: rgba(0, 170, 255, 0.1);
+  border: 1px solid rgba(0, 170, 255, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.legend-item.selected-indicator {
+  background: rgba(255, 255, 0, 0.1);
+  border: 1px solid rgba(255, 255, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Update selected unit info for real-time mode */
+.selected-unit-info {
+  background: rgba(42, 42, 42, 0.95);
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 12px;
+  backdrop-filter: blur(5px);
+}
+
+.selected-unit-info p:last-child {
+  margin-bottom: 0;
+  font-weight: 600;
+  color: #00aaff;
+}
+
 /* Mobile-specific enhancements */
 @media (max-width: 768px) {
   .tactical-view-wrapper {
@@ -331,6 +454,24 @@
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+  }
+  
+  .realtime-control-panel {
+    position: relative;
+    top: 0;
+    right: 0;
+    margin-bottom: 12px;
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .instruction-row {
+    justify-content: flex-start;
+    gap: 12px;
+  }
+  
+  .description {
+    text-align: left;
   }
 }
 

@@ -5,7 +5,7 @@ import { Character } from '@shared/types';
 import { TacticalView } from '../components/TacticalView';
 import { InGameHUD } from '../components/InGameHUD';
 import { StrategicView } from '../components/StrategicView.tsx';
-import { CombatActionType } from '@shared/types';
+// import { CombatActionType } from '@shared/types';
 import './HybridGameScreen.css';
 
 interface HybridGameScreenProps {
@@ -21,7 +21,6 @@ export const HybridGameScreen: React.FC<HybridGameScreenProps> = ({
   const [gameMode, setGameMode] = useState<GameMode>(GameMode.STRATEGIC);
   const [gameManager] = useState(() => new HybridGameManager());
   const [combatEngine, setCombatEngine] = useState<CombatEngine | null>(null);
-  const [selectedAction, setSelectedAction] = useState<CombatActionType | null>(null);
   
   // Strategic state
   const [playerArmies, setPlayerArmies] = useState<Army[]>([]);
@@ -142,7 +141,6 @@ export const HybridGameScreen: React.FC<HybridGameScreenProps> = ({
     gameManager.on('combatResolved', (result: any) => {
       addToGameLog(`Combat resolved: ${result.victor} victory`);
       setCombatEngine(null);
-      setSelectedAction(null);
     });
 
     // Resource updates
@@ -177,10 +175,7 @@ export const HybridGameScreen: React.FC<HybridGameScreenProps> = ({
   };
 
   // Tactical mode handlers
-  const handleActionSelected = (action: CombatActionType) => {
-    setSelectedAction(action);
-    console.log(`🎯 Tactical action selected: ${action}`);
-  };
+  // Removed: handleActionSelected (was only used for InGameHUD props)
 
   // Exit handling
   const handleExit = () => {
@@ -260,16 +255,10 @@ export const HybridGameScreen: React.FC<HybridGameScreenProps> = ({
           <TacticalView
             className="tactical-view-fullscreen"
             hideUIElements={true}
-            selectedAction={selectedAction}
-            onCombatEngineCreated={(engine) => setCombatEngine(engine)}
             gameState="active"
           />
           
-          <InGameHUD
-            combatEngine={combatEngine}
-            onActionSelected={handleActionSelected}
-            gameState="active"
-          />
+          <InGameHUD />
         </div>
       )}
 

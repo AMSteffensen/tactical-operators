@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { CombatSystem, ShotResult } from '../combat/CombatSystem';
 
 /**
  * TacticalRenderer handles the WebGL rendering for the top-down tactical view
@@ -37,6 +38,25 @@ export class TacticalRenderer {
   private onUnitMovedCallback?: (unitId: string, position: THREE.Vector3) => void;
   private onGroundClickedCallback?: (position: THREE.Vector3) => void;
 
+  // Keyboard movement state
+  private keysPressed = new Set<string>();
+  private keyboardMovementEnabled = true;
+  private movementSpeed = 3.0; // Units per second for responsive movement
+
+  // Real-time movement system
+  private lastFrameTime = 0;
+  private activePlayerUnit: THREE.Object3D | null = null; // The unit the player is currently controlling
+
+  // Collision detection system
+  private collisionObjects: THREE.Object3D[] = []; // Objects that block movement
+  private unitRadius = 0.15; // Smaller collision radius for tighter movement feel
+  private safeSpawnPoints: THREE.Vector3[] = []; // Predefined safe spawn locations
+
+  // Combat system integration
+  private combatSystem: CombatSystem;
+  //private crosshairMesh: THREE.Mesh | null = null;
+  private onShotFiredCallback?: (result: ShotResult) => void;
+
   constructor(container: HTMLElement) {
     this.container = container;
     this.scene = new THREE.Scene();
@@ -44,6 +64,9 @@ export class TacticalRenderer {
     this.setupRenderer();
     this.setupLighting();
     this.setupControls();
+    
+    // Initialize combat system
+    this.combatSystem = new CombatSystem(this.scene);
 
     // Start render loop
     this.animate();
@@ -114,6 +137,10 @@ export class TacticalRenderer {
     this.container.addEventListener('mousemove', this.onMouseMove.bind(this));
     this.container.addEventListener('click', this.onMouseClick.bind(this));
     this.container.addEventListener('contextmenu', this.onRightClick.bind(this));
+
+    // Keyboard controls for WASD movement
+    document.addEventListener('keydown', this.onKeyDown.bind(this));
+    document.addEventListener('keyup', this.onKeyUp.bind(this));
   }
 
   private onWindowResize() {
@@ -163,6 +190,8 @@ export class TacticalRenderer {
 
     if (intersects.length > 0) {
       const clickedObject = intersects[0].object;
+      const clickPosition = intersects[0].point;
+      clickPosition.y = 0; // Keep on ground level
 
       // Find the top-level unit group
       let unitObject = clickedObject;
@@ -172,16 +201,63 @@ export class TacticalRenderer {
 
       // Check if we clicked on a unit
       if (unitObject.userData?.type === 'unit') {
-        this.selectUnit(unitObject);
-      } else if (unitObject === this.mapMesh && this.selectedUnit) {
-        // Move selected unit to clicked position
-        const clickPosition = intersects[0].point;
-        clickPosition.y = 0; // Keep on ground level
-        this.moveUnitToPosition(this.selectedUnit.name, clickPosition);
+        console.log(`🖱️ Clicked on unit: ${unitObject.name}, faction: ${unitObject.userData?.faction}`);
+        console.log(`🎮 Active player unit:`, this.activePlayerUnit?.name);
+        
+        // Check if we have an active player unit and can shoot at enemy
+        if (this.activePlayerUnit && 
+            unitObject.userData?.faction === 'enemy' &&
+            this.canUnitShoot(this.activePlayerUnit.userData.id || this.activePlayerUnit.name)) {
+          
+          console.log(`🔫 Attempting to shoot at enemy ${unitObject.name}`);
+          
+          // Shoot at enemy unit
+          const result = this.shootAtPosition(
+            this.activePlayerUnit.userData.id || this.activePlayerUnit.name, 
+            clickPosition
+          );
+          
+          if (result) {
+            console.log(`🔫 Shot fired! Hit: ${result.hit}, Damage: ${result.damage}`);
+            this.onShotFiredCallback?.(result);
+            
+            // Update combat unit position in combat system
+            this.combatSystem.updateUnitPosition(
+              this.activePlayerUnit.userData.id || this.activePlayerUnit.name,
+              this.activePlayerUnit.position
+            );
+          }
+        } else if (unitObject.userData?.faction === 'enemy') {
+          // Enemy unit clicked but can't shoot - just show targeting
+          console.log(`🎯 Targeting enemy: ${unitObject.name}`);
+          // Don't select the enemy unit, just acknowledge the click
+        } else if (unitObject.userData?.faction === 'player') {
+          // Only allow selection of the specific player character we control
+          if (this.activePlayerUnit && unitObject.name === this.activePlayerUnit.name) {
+            // Clicking on our own character - allow selection
+            this.selectUnit(unitObject);
+          } else {
+            // Clicking on a teammate - not allowed in single character mode
+            console.log(`❌ Cannot control teammate ${unitObject.name} in single character mode`);
+          }
+        } else if (unitObject.userData?.faction === 'ally') {
+          // AI-controlled ally - cannot control
+          console.log(`❌ Cannot control AI ally ${unitObject.name}`);
+        } else {
+          // Neutral or other units - no interaction in single character mode
+          console.log(`❌ Cannot interact with ${unitObject.name}`);
+        }
+      } else if (unitObject === this.mapMesh) {
+        // Ground clicked - only move if we have an active player unit
+        if (this.activePlayerUnit) {
+          // Move the active player unit to clicked position
+          this.moveUnitToPosition(this.activePlayerUnit.name, clickPosition);
+          console.log(`🎯 Moving to (${clickPosition.x.toFixed(1)}, ${clickPosition.z.toFixed(1)})`);
+        } else {
+          console.log(`❌ No character to move`);
+        }
       } else {
         // Clicked on ground - call ground click callback
-        const clickPosition = intersects[0].point;
-        clickPosition.y = 0;
         this.onGroundClickedCallback?.(clickPosition);
       }
     }
@@ -191,6 +267,220 @@ export class TacticalRenderer {
     event.preventDefault();
     // Right click could be used for context menus or other actions
     this.deselectUnit();
+  }
+
+  private onKeyDown(event: KeyboardEvent) {
+    if (!this.keyboardMovementEnabled || !this.activePlayerUnit) return;
+    
+    const key = event.key.toLowerCase();
+    
+    // Only handle WASD keys
+    if (['w', 'a', 's', 'd'].includes(key)) {
+      event.preventDefault();
+      
+      // Add key to pressed set
+      this.keysPressed.add(key);
+    }
+  }
+
+  private onKeyUp(event: KeyboardEvent) {
+    if (!this.keyboardMovementEnabled) return;
+    
+    const key = event.key.toLowerCase();
+    
+    // Remove key from pressed set
+    this.keysPressed.delete(key);
+  }
+
+  private processKeyboardMovement(deltaTime: number) {
+    if (!this.activePlayerUnit || this.keysPressed.size === 0) return;
+    
+    let deltaX = 0;
+    let deltaZ = 0;
+    
+    // Calculate movement direction based on pressed keys
+    if (this.keysPressed.has('w')) deltaZ -= this.movementSpeed * deltaTime; // Move forward (north)
+    if (this.keysPressed.has('s')) deltaZ += this.movementSpeed * deltaTime; // Move backward (south)
+    if (this.keysPressed.has('a')) deltaX -= this.movementSpeed * deltaTime; // Move left (west)
+    if (this.keysPressed.has('d')) deltaX += this.movementSpeed * deltaTime; // Move right (east)
+    
+    // Calculate new position
+    const currentPos = this.activePlayerUnit.position;
+    const newPosition = new THREE.Vector3(
+      currentPos.x + deltaX,
+      currentPos.y,
+      currentPos.z + deltaZ
+    );
+    
+    // Check for collisions before applying movement
+    if (this.canMoveTo(newPosition)) {
+      // Apply movement directly to the unit
+      this.activePlayerUnit.position.copy(newPosition);
+      
+      // Update camera to follow the active unit
+      this.centerCameraOnPosition(this.activePlayerUnit.position);
+      
+      // Reveal fog around the unit's new position
+      this.revealFogAroundPosition(this.activePlayerUnit.position);
+      
+      // Call movement callback for network sync
+      if (deltaX !== 0 || deltaZ !== 0) {
+        this.onUnitMovedCallback?.(this.activePlayerUnit.name, this.activePlayerUnit.position);
+      }
+    }
+  }
+
+  /**
+   * Check if a unit can move to the specified position without colliding
+   */
+  private canMoveTo(position: THREE.Vector3): boolean {
+    // Check map boundaries
+    const halfMapWidth = this.mapWidth / 2;
+    const halfMapHeight = this.mapHeight / 2;
+    
+    if (position.x < -halfMapWidth + this.unitRadius || 
+        position.x > halfMapWidth - this.unitRadius ||
+        position.z < -halfMapHeight + this.unitRadius || 
+        position.z > halfMapHeight - this.unitRadius) {
+      return false;
+    }
+    
+    // Check collision with objects
+    for (const obj of this.collisionObjects) {
+      if (this.checkCollisionWithObject(position, obj)) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
+   * Check collision between a position and an object
+   */
+  private checkCollisionWithObject(position: THREE.Vector3, object: THREE.Object3D): boolean {
+    // Get object's bounding box
+    const box = new THREE.Box3().setFromObject(object);
+    
+    // Create a bounding box for the unit at the new position
+    const unitBox = new THREE.Box3().setFromCenterAndSize(
+      position,
+      new THREE.Vector3(this.unitRadius * 2, 1, this.unitRadius * 2)
+    );
+    
+    return box.intersectsBox(unitBox);
+  }
+
+  /**
+   * Add an object to the collision system
+   */
+  private addCollisionObject(object: THREE.Object3D) {
+    if (!this.collisionObjects.includes(object)) {
+      this.collisionObjects.push(object);
+      object.userData.isCollisionObject = true;
+    }
+  }
+
+  /**
+   * Remove an object from the collision system
+   */
+  private removeCollisionObject(object: THREE.Object3D) {
+    const index = this.collisionObjects.indexOf(object);
+    if (index > -1) {
+      this.collisionObjects.splice(index, 1);
+      object.userData.isCollisionObject = false;
+    }
+  }
+
+  /**
+   * Initialize safe spawn points on the battlefield
+   */
+  private initializeSafeSpawnPoints() {
+    this.safeSpawnPoints = [
+      // Central safe area
+      new THREE.Vector3(0, 0, -25),
+      new THREE.Vector3(-5, 0, -25),
+      new THREE.Vector3(5, 0, -25),
+      new THREE.Vector3(-10, 0, -25),
+      new THREE.Vector3(10, 0, -25),
+      
+      // Secondary spawn points
+      new THREE.Vector3(-15, 0, -20),
+      new THREE.Vector3(15, 0, -20),
+      new THREE.Vector3(-20, 0, -15),
+      new THREE.Vector3(20, 0, -15),
+      
+      // Backup spawn points
+      new THREE.Vector3(0, 0, -30),
+      new THREE.Vector3(-8, 0, -30),
+      new THREE.Vector3(8, 0, -30)
+    ];
+  }
+
+  /**
+   * Get the next available safe spawn point
+   */
+  private getNextSafeSpawnPoint(): THREE.Vector3 {
+    // Check each spawn point to see if it's free
+    for (const spawnPoint of this.safeSpawnPoints) {
+      if (this.isSpawnPointFree(spawnPoint)) {
+        return spawnPoint.clone();
+      }
+    }
+    
+    // If all predefined points are occupied, find a safe area
+    return this.findSafeSpawnArea();
+  }
+
+  /**
+   * Check if a spawn point is free of other units and obstacles
+   */
+  private isSpawnPointFree(position: THREE.Vector3): boolean {
+    const checkRadius = this.unitRadius * 2; // Give some extra space
+    
+    // Check for collisions with objects
+    for (const obj of this.collisionObjects) {
+      if (this.checkCollisionWithObject(position, obj)) {
+        return false;
+      }
+    }
+    
+    // Check for other units nearby
+    const units = this.getUnits();
+    for (const unit of units) {
+      const distance = position.distanceTo(unit.position);
+      if (distance < checkRadius) {
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
+   * Find a safe spawn area when all predefined points are taken
+   */
+  private findSafeSpawnArea(): THREE.Vector3 {
+    // Search in a grid pattern around the spawn area
+    const searchArea = {
+      minX: -30,
+      maxX: 30,
+      minZ: -35,
+      maxZ: -15
+    };
+    
+    for (let x = searchArea.minX; x <= searchArea.maxX; x += 2) {
+      for (let z = searchArea.minZ; z <= searchArea.maxZ; z += 2) {
+        const testPos = new THREE.Vector3(x, 0, z);
+        if (this.isSpawnPointFree(testPos)) {
+          return testPos;
+        }
+      }
+    }
+    
+    // Fallback to origin if nothing found (shouldn't happen in normal gameplay)
+    console.warn('⚠️ No safe spawn point found, using origin');
+    return new THREE.Vector3(0, 0, -25);
   }
 
   private handleMouseHover() {
@@ -312,8 +602,12 @@ export class TacticalRenderer {
       this.scene.remove(this.mapMesh);
     }
 
-    // Clear existing environmental elements
+    // Clear existing environmental elements and collision objects
     this.clearEnvironmentalElements();
+    this.collisionObjects = [];
+
+    // Initialize safe spawn points
+    this.initializeSafeSpawnPoints();
 
     // Create multiple terrain zones
     this.createTerrainZones(width, height);
@@ -342,7 +636,7 @@ export class TacticalRenderer {
     // Initialize fog of war system
     this.initializeFogOfWar(width, height);
 
-    console.log('✅ Large battlefield created successfully');
+    console.log(`✅ Large battlefield created with ${this.collisionObjects.length} collision objects`);
   }
 
   private createTerrainZones(width: number, height: number) {
@@ -446,6 +740,9 @@ export class TacticalRenderer {
 
     centralBuildingGroup.userData = { type: 'landmark', name: 'central_complex' };
     this.scene.add(centralBuildingGroup);
+    
+    // Add central building to collision system
+    this.addCollisionObject(centralBuildingGroup);
 
     // Watchtowers at corners
     const towerPositions = [
@@ -485,6 +782,9 @@ export class TacticalRenderer {
       towerGroup.position.set(pos.x, 0, pos.z);
       towerGroup.userData = { type: 'landmark', name: `tower_${index}` };
       this.scene.add(towerGroup);
+      
+      // Add tower to collision system
+      this.addCollisionObject(towerGroup);
     });
 
     // Bridge structures
@@ -496,6 +796,9 @@ export class TacticalRenderer {
     bridge1.receiveShadow = true;
     bridge1.userData = { type: 'landmark', name: 'bridge_north' };
     this.scene.add(bridge1);
+    
+    // Add bridge to collision system
+    this.addCollisionObject(bridge1);
   }
 
   private createRoadNetwork(width: number, height: number) {
@@ -595,6 +898,9 @@ export class TacticalRenderer {
     treeGroup.position.set(x, 0, z);
     treeGroup.userData = { type: 'environmental', subtype: 'tree' };
     this.scene.add(treeGroup);
+    
+    // Add tree to collision system
+    this.addCollisionObject(treeGroup);
   }
 
   private addWaterFeatures(width: number, height: number) {
@@ -695,6 +1001,9 @@ export class TacticalRenderer {
       bunkerGroup.position.set(pos.x, 0, pos.z);
       bunkerGroup.userData = { type: 'defensive', name: `bunker_${index}` };
       this.scene.add(bunkerGroup);
+      
+      // Add bunker to collision system
+      this.addCollisionObject(bunkerGroup);
     });
 
     // Trench network
@@ -867,6 +1176,9 @@ export class TacticalRenderer {
    * Add a simple unit/character representation with enhanced visual
    */
   addUnit(id: string, position: THREE.Vector3, color: number = 0x00ff00) {
+    // Use safe spawn point if position would cause collision
+    const safePosition = this.canMoveTo(position) ? position : this.getNextSafeSpawnPoint();
+    
     // Create a group to hold multiple parts
     const unitGroup = new THREE.Group();
     unitGroup.name = id;
@@ -899,9 +1211,13 @@ export class TacticalRenderer {
     weapon.castShadow = true;
     unitGroup.add(weapon);
 
-    // Position the group
-    unitGroup.position.copy(position);
+    // Position the group at safe location
+    unitGroup.position.copy(safePosition);
     this.scene.add(unitGroup);
+
+    if (!position.equals(safePosition)) {
+      console.log(`📍 Unit ${id} moved to safe spawn point:`, safePosition);
+    }
 
     return unitGroup;
   }
@@ -910,6 +1226,9 @@ export class TacticalRenderer {
    * Add a character-based unit with character info and enhanced visuals
    */
   addCharacterUnit(character: any, position: THREE.Vector3) {
+    // Use safe spawn point if position would cause collision
+    const safePosition = this.canMoveTo(position) ? position : this.getNextSafeSpawnPoint();
+    
     // Get color and shape based on character class
     const classConfigs: Record<string, { color: number; weaponType: string; size: number }> = {
       assault: { color: 0xff4444, weaponType: 'rifle', size: 1.0 },      // Red - Standard size
@@ -958,9 +1277,13 @@ export class TacticalRenderer {
     // Class identifier on base
     this.addClassIdentifier(unitGroup, character.class, config.color, scale);
 
-    // Position the group
-    unitGroup.position.copy(position);
+    // Position the group at safe location
+    unitGroup.position.copy(safePosition);
     this.scene.add(unitGroup);
+
+    if (!position.equals(safePosition)) {
+      console.log(`📍 Character ${character.name} moved to safe spawn point:`, safePosition);
+    }
 
     return unitGroup;
   }
@@ -1081,6 +1404,31 @@ export class TacticalRenderer {
   }
 
   /**
+   * Move a unit to a position immediately (for real-time controls)
+   */
+  moveUnitToPosition(unitId: string, position: THREE.Vector3) {
+    const unit = this.scene.getObjectByName(unitId);
+    if (unit) {
+      // Check if the target position is valid
+      if (!this.canMoveTo(position)) {
+        console.log(`❌ Cannot move unit ${unitId} to position - collision detected`);
+        return false;
+      }
+      // For real-time mode, move immediately without animation
+      unit.position.copy(position);
+      // Only center camera if this is the active player unit
+      if (this.activePlayerUnit && unitId === this.activePlayerUnit.name) {
+        this.centerCameraOnPosition(position);
+      }
+      // Call movement callback
+      this.onUnitMovedCallback?.(unitId, position);
+      console.log(`🚶 Moving unit ${unitId} to`, position);
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Get all units in the scene
    */
   getUnits() {
@@ -1112,9 +1460,15 @@ export class TacticalRenderer {
     obstacle.userData = { type: 'obstacle' };
 
     this.scene.add(obstacle);
+    
+    // Add to collision system
+    this.addCollisionObject(obstacle);
+    
     return obstacle;
   }
 
+  /**
+   * Get the Three.js scene for direct access when needed
   /**
    * Get the Three.js scene for direct access when needed
    */
@@ -1135,6 +1489,11 @@ export class TacticalRenderer {
     this.selectedUnit = unit;
     this.setUnitSelectedState(unit, true);
 
+    // Set as active player unit if it's a player unit
+    if (unit.userData?.faction === 'player') {
+      this.setActivePlayerUnit(unit);
+    }
+
     // Center camera on selected unit and reveal fog around it
     this.centerCameraOnPosition(unit.position);
 
@@ -1142,6 +1501,36 @@ export class TacticalRenderer {
     this.onUnitSelectedCallback?.(unit);
 
     console.log(`✅ Selected unit: ${unit.name}`, unit.userData);
+  }
+
+  /**
+   * Set the unit that the player can control with WASD
+   */
+  setActivePlayerUnit(unit: THREE.Object3D | null) {
+    // Remove highlight from previous active unit
+    if (this.activePlayerUnit && this.activePlayerUnit !== this.selectedUnit) {
+      this.setUnitActiveState(this.activePlayerUnit, false);
+    }
+
+    this.activePlayerUnit = unit;
+
+    // Add highlight to new active unit
+    if (unit) {
+      this.setUnitActiveState(unit, true);
+      console.log(`🎮 Now controlling: ${unit.name}`);
+    }
+  }
+
+  /**
+   * Get the currently active player unit
+   */
+  getActivePlayerUnit(): THREE.Object3D | null {
+    return this.activePlayerUnit;
+  }
+
+  private setUnitActiveState(unit: THREE.Object3D, active: boolean) {
+    // Add a blue outline for the actively controlled unit
+    this.addUnitOutline(unit, active ? 0x00aaff : null, 0.05);
   }
 
   private deselectUnit() {
@@ -1196,22 +1585,6 @@ export class TacticalRenderer {
       });
 
       unit.add(outlineGroup);
-    }
-  }
-
-  private moveUnitToPosition(unitId: string, position: THREE.Vector3) {
-    const unit = this.scene.getObjectByName(unitId);
-    if (unit) {
-      // Animate the movement
-      this.animateUnitMovement(unit, position);
-
-      // Center camera on new position and reveal fog
-      this.centerCameraOnPosition(position);
-
-      // Call movement callback
-      this.onUnitMovedCallback?.(unitId, position);
-
-      console.log(`🚶 Moving unit ${unitId} to`, position);
     }
   }
 
@@ -1271,15 +1644,99 @@ export class TacticalRenderer {
   }
 
   /**
+   * Combat system integration methods
+   */
+  addCombatUnit(unitId: string, unit: THREE.Object3D, weapon: any, faction: string) {
+    // Restrict faction to valid CombatUnit types
+    const validFaction = (faction === 'player' || faction === 'enemy' || faction === 'neutral') ? faction : 'neutral';
+    const combatUnit = {
+      id: unitId,
+      name: unitId,
+      position: unit.position.clone(),
+      health: weapon.maxAmmo * 3, // Example: health based on weapon, adjust as needed
+      maxHealth: weapon.maxAmmo * 3,
+      weapon: weapon,
+      faction: validFaction as 'player' | 'enemy' | 'neutral',
+      isAlive: true,
+      lastShotTime: 0,
+      isReloading: false,
+      aimDirection: new THREE.Vector3(0, 0, 1)
+    };
+    this.combatSystem.addUnit(combatUnit);
+    return combatUnit;
+  }
+
+  // Shooting mechanics
+  shootAtPosition(shooterId: string, targetPosition: THREE.Vector3): ShotResult | null {
+    return this.combatSystem.shoot(shooterId, targetPosition);
+  }
+
+  canUnitShoot(unitId: string): boolean {
+    return this.combatSystem.canShoot(unitId);
+  }
+
+  getUnitWeaponInfo(unitId: string) {
+    return this.combatSystem.getWeaponInfo(unitId);
+  }
+
+  updateCombatSystem(deltaTime: number) {
+    this.combatSystem.update(deltaTime);
+  }
+
+  // Set combat event callbacks
+  setOnShotFired(callback: (result: ShotResult) => void) {
+    this.onShotFiredCallback = callback;
+  }
+
+  /**
    * Main render loop
    */
   private animate() {
     requestAnimationFrame(this.animate.bind(this));
+    
+    const currentTime = performance.now();
+    const deltaTime = (currentTime - this.lastFrameTime) / 1000; // Convert to seconds
+    this.lastFrameTime = currentTime;
+    
+    // Process continuous keyboard movement
+    this.processKeyboardMovement(deltaTime);
+    
+    // Update combat system
+    this.updateCombatSystem(deltaTime);
+    
     this.render();
   }
 
   private render() {
     this.renderer.render(this.scene, this.camera);
+  }
+
+  /**
+   * Enable or disable keyboard movement
+   */
+  setKeyboardMovementEnabled(enabled: boolean) {
+    this.keyboardMovementEnabled = enabled;
+    if (!enabled) {
+      this.keysPressed.clear();
+    }
+  }
+
+  /**
+   * Set movement speed for WASD controls
+   */
+  setMovementSpeed(speed: number) {
+    this.movementSpeed = Math.max(0.1, speed); // Minimum speed limit
+  }
+
+  /**
+   * Get current keyboard movement state
+   */
+  getKeyboardMovementState() {
+    return {
+      enabled: this.keyboardMovementEnabled,
+      speed: this.movementSpeed,
+      pressedKeys: Array.from(this.keysPressed)
+    };
   }
 
   /**
@@ -1291,11 +1748,53 @@ export class TacticalRenderer {
     this.container.removeEventListener('mousemove', this.onMouseMove.bind(this));
     this.container.removeEventListener('click', this.onMouseClick.bind(this));
     this.container.removeEventListener('contextmenu', this.onRightClick.bind(this));
+    
+    // Remove keyboard event listeners
+    document.removeEventListener('keydown', this.onKeyDown.bind(this));
+    document.removeEventListener('keyup', this.onKeyUp.bind(this));
 
     if (this.renderer) this.renderer.dispose();
     if (this.container && this.renderer) {
       this.container.removeChild(this.renderer.domElement);
     }
+  }
+
+  // ...existing code...
+  /**
+   * Reveal fog around a position (called when units move or are selected)
+   * TODO: Implement proper fog revealing based on unit vision
+   */
+  private revealFogAroundPosition(position: THREE.Vector3, radius: number = this.visibilityRadius) {
+    if (!this.fogOfWarEnabled || !this.fogData || !this.fogTexture) {
+      return;
+    }
+
+    // Convert world position to texture coordinates
+    const textureX = Math.floor(((position.x + this.mapWidth / 2) / this.mapWidth) * this.fogResolution);
+    const textureZ = Math.floor(((position.z + this.mapHeight / 2) / this.mapHeight) * this.fogResolution);
+
+    // Reveal area around position
+    const radiusInTexels = Math.floor((radius / Math.max(this.mapWidth, this.mapHeight)) * this.fogResolution);
+
+    for (let x = -radiusInTexels; x <= radiusInTexels; x++) {
+      for (let z = -radiusInTexels; z <= radiusInTexels; z++) {
+        const texX = textureX + x;
+        const texZ = textureZ + z;
+
+        if (texX >= 0 && texX < this.fogResolution && texZ >= 0 && texZ < this.fogResolution) {
+          const distance = Math.sqrt(x * x + z * z);
+          if (distance <= radiusInTexels) {
+            const index = (texZ * this.fogResolution + texX) * 4;
+            // Mark as explored
+            this.exploredAreas.add(`${texX},${texZ}`);
+            // Clear fog (make transparent)
+            this.fogData[index + 3] = Math.max(0, 255 - (255 * (1 - distance / radiusInTexels)));
+          }
+        }
+      }
+    }
+
+    this.fogTexture.needsUpdate = true;
   }
 
   /**
@@ -1307,8 +1806,6 @@ export class TacticalRenderer {
       return;
     }
 
-    console.log(`🌫️ Initializing fog of war for ${width}x${height} battlefield`);
-    
     // Store map dimensions for fog calculations
     this.mapWidth = width;
     this.mapHeight = height;
@@ -1352,46 +1849,222 @@ export class TacticalRenderer {
 
     // Initial fog reveal at center (just to demonstrate the system works)
     this.revealFogAroundPosition(new THREE.Vector3(0, 0, 0), this.visibilityRadius);
-
-    console.log('✅ Fog of war system initialized');
   }
 
   /**
-   * Reveal fog around a position (called when units move or are selected)
-   * TODO: Implement proper fog revealing based on unit vision
+   * Get real-time movement state
    */
-  private revealFogAroundPosition(position: THREE.Vector3, radius: number = this.visibilityRadius) {
-    if (!this.fogOfWarEnabled || !this.fogData || !this.fogTexture) {
-      return;
+  getRealTimeMovementState() {
+    return {
+      enabled: this.keyboardMovementEnabled,
+      speed: this.movementSpeed,
+      pressedKeys: Array.from(this.keysPressed),
+      activeUnit: this.activePlayerUnit?.name || null,
+      selectedUnit: this.selectedUnit?.name || null
+    };
+  }
+
+  /**
+   * Create a completely clean, empty test map with no collision objects
+   * Perfect for testing the collision system incrementally
+   */
+  createCleanTestMap(width: number = 40, height: number = 30) {
+    console.log(`🧪 Creating clean test map: ${width}x${height} units`);
+
+    // Remove existing map
+    if (this.mapMesh) {
+      this.scene.remove(this.mapMesh);
     }
 
-    // Convert world position to texture coordinates
-    const textureX = Math.floor(((position.x + this.mapWidth / 2) / this.mapWidth) * this.fogResolution);
-    const textureZ = Math.floor(((position.z + this.mapHeight / 2) / this.mapHeight) * this.fogResolution);
+    // Clear existing environmental elements and collision objects
+    this.clearEnvironmentalElements();
+    this.collisionObjects = [];
 
-    // Reveal area around position
-    const radiusInTexels = Math.floor((radius / Math.max(this.mapWidth, this.mapHeight)) * this.fogResolution);
+    // Initialize safe spawn points for the clean map
+    this.initializeCleanMapSpawnPoints(height);
 
-    for (let x = -radiusInTexels; x <= radiusInTexels; x++) {
-      for (let z = -radiusInTexels; z <= radiusInTexels; z++) {
-        const texX = textureX + x;
-        const texZ = textureZ + z;
+    // Create simple flat ground plane
+    const groundGeometry = new THREE.PlaneGeometry(width, height);
+    const groundMaterial = new THREE.MeshLambertMaterial({
+      color: 0x4a5d23, // Olive green
+      transparent: true,
+      opacity: 0.9
+    });
 
-        if (texX >= 0 && texX < this.fogResolution && texZ >= 0 && texZ < this.fogResolution) {
-          const distance = Math.sqrt(x * x + z * z);
-          if (distance <= radiusInTexels) {
-            const index = (texZ * this.fogResolution + texX) * 4;
-            
-            // Mark as explored
-            this.exploredAreas.add(`${texX},${texZ}`);
-            
-            // Clear fog (make transparent)
-            this.fogData[index + 3] = Math.max(0, 255 - (255 * (1 - distance / radiusInTexels)));
-          }
-        }
+    this.mapMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+    this.mapMesh.rotation.x = -Math.PI / 2;
+    this.mapMesh.receiveShadow = true;
+       this.mapMesh.userData = { type: 'ground' };
+    this.scene.add(this.mapMesh);
+
+    // Simple clean grid
+    this.createCleanGrid(width, height);
+
+    // Update camera for the clean test map
+    this.adjustCameraForTestMap(width, height);
+
+    console.log(`✅ Clean test map created - ready for collision testing`);
+  }
+
+  /**
+   * Initialize spawn points for the clean test map
+   */
+  private initializeCleanMapSpawnPoints(height: number) {
+    this.safeSpawnPoints = [
+      // Bottom edge spawn points (player area)
+      new THREE.Vector3(0, 0, -height / 2 + 2),
+      new THREE.Vector3(-3, 0, -height / 2 + 2),
+      new THREE.Vector3(3, 0, -height / 2 + 2),
+      new THREE.Vector3(-6, 0, -height / 2 + 2),
+      new THREE.Vector3(6, 0, -height / 2 + 2),
+      
+      // Secondary row
+      new THREE.Vector3(-1.5, 0, -height / 2 + 4),
+      new THREE.Vector3(1.5, 0, -height / 2 + 4),
+      new THREE.Vector3(-4.5, 0, -height / 2 + 4),
+      new THREE.Vector3(4.5, 0, -height / 2 + 4),
+    ];
+  }
+
+  /**
+   * Create a simple, clean grid for the test map
+   */
+  private createCleanGrid(width: number, height: number) {
+    const gridHelper = new THREE.GridHelper(
+      Math.max(width, height),
+      Math.max(width, height),
+      0x888888,
+      0x444444
+    );
+    gridHelper.position.y = 0.01;
+    this.scene.add(gridHelper);
+
+    // Add coordinate markers at key points for reference
+    const markerMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const markerGeometry = new THREE.SphereGeometry(0.1, 4, 3);
+
+    // Center marker
+    const centerMarker = new THREE.Mesh(markerGeometry, markerMaterial);
+    centerMarker.position.set(0, 0.1, 0);
+    this.scene.add(centerMarker);
+
+    // Corner markers
+    const corners = [
+      { x: -width / 2 + 1, z: -height / 2 + 1 },
+      { x: width / 2 - 1, z: -height / 2 + 1 },
+      { x: -width / 2 + 1, z: height / 2 - 1 },
+      { x: width / 2 - 1, z: height / 2 - 1 }
+    ];
+
+
+    corners.forEach(corner => {
+      const marker = new THREE.Mesh(markerGeometry, markerMaterial);
+      marker.position.set(corner.x, 0.1, corner.z);
+      this.scene.add(marker);
+    });
+  }
+
+  /**
+   * Adjust camera for the clean test map
+   */
+  private adjustCameraForTestMap(width: number, height: number) {
+    const aspect = this.container.clientWidth / this.container.clientHeight;
+    const viewSize = Math.max(width, height) * 0.7;
+
+    this.camera.left = -viewSize * aspect;
+    this.camera.right = viewSize * aspect;
+    this.camera.top = viewSize;
+    this.camera.bottom = -viewSize;
+    this.camera.updateProjectionMatrix();
+
+    // Set appropriate camera distance
+    this.cameraDistance = Math.max(width, height) * 0.8;
+    this.camera.position.y = this.cameraDistance;
+  }
+
+  /**
+   * Add a test wall to the clean map for collision testing
+   */
+  addTestWall(position: THREE.Vector3, size: THREE.Vector3, color: number = 0x8B4513) {
+    const wallGeometry = new THREE.BoxGeometry(size.x, size.y, size.z);
+    const wallMaterial = new THREE.MeshLambertMaterial({ color });
+    const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+    
+    wall.position.copy(position);
+    wall.position.y = size.y / 2; // Position on ground
+    wall.castShadow = true;
+    wall.receiveShadow = true;
+    wall.userData = { type: 'test_wall', name: `wall_${this.collisionObjects.length}` };
+    
+    this.scene.add(wall);
+    this.addCollisionObject(wall);
+    
+    console.log(`✅ Added test wall at (${position.x}, ${position.z}) - Collision objects: ${this.collisionObjects.length}`);
+    return wall;
+  }
+
+  /**
+   * Add a test obstacle to the clean map for collision testing
+   */
+  addTestObstacle(position: THREE.Vector3, radius: number = 1, color: number = 0x696969) {
+    const obstacleGeometry = new THREE.CylinderGeometry(radius, radius, 1.5, 8);
+    const obstacleMaterial = new THREE.MeshLambertMaterial({ color });
+    const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+    
+    obstacle.position.copy(position);
+    obstacle.position.y = 0.75; // Position on ground
+    obstacle.castShadow = true;
+    obstacle.receiveShadow = true;
+    obstacle.userData = { type: 'test_obstacle', name: `obstacle_${this.collisionObjects.length}` };
+    
+    this.scene.add(obstacle);
+    this.addCollisionObject(obstacle);
+    
+    console.log(`✅ Added test obstacle at (${position.x}, ${position.z}) - Collision objects: ${this.collisionObjects.length}`);
+    return obstacle;
+  }
+
+  /**
+   * Add a series of test walls to demonstrate collision boundaries
+   */
+  addTestCollisionBoundaries() {
+    console.log('🧪 Adding test collision boundaries...');
+    
+    // Horizontal wall in the center
+    this.addTestWall(new THREE.Vector3(0, 0, 0), new THREE.Vector3(8, 2, 1), 0x8B4513);
+    
+    // Vertical wall on the left
+    this.addTestWall(new THREE.Vector3(-6, 0, 5), new THREE.Vector3(1, 2, 6), 0x696969);
+    
+    // Small obstacle on the right
+    this.addTestObstacle(new THREE.Vector3(8, 0, -3), 1.5, 0x8B0000);
+    
+    // L-shaped wall structure
+    this.addTestWall(new THREE.Vector3(-3, 0, -8), new THREE.Vector3(6, 1.5, 1), 0x556B2F);
+    this.addTestWall(new THREE.Vector3(-6, 0, -5), new THREE.Vector3(1, 1.5, 6), 0x556B2F);
+    
+    console.log(`✅ Test collision boundaries added - Total collision objects: ${this.collisionObjects.length}`);
+  }
+
+  /**
+   * Clear all test objects from the clean map
+   */
+  clearTestObjects() {
+    console.log('🧹 Clearing all test objects...');
+    
+    // Remove test objects from scene
+    const objectsToRemove: THREE.Object3D[] = [];
+    this.scene.traverse((child) => {
+      if (child.userData.type === 'test_wall' || child.userData.type === 'test_obstacle') {
+        objectsToRemove.push(child);
       }
-    }
-
-    this.fogTexture.needsUpdate = true;
+    });
+    
+    objectsToRemove.forEach(obj => {
+      this.scene.remove(obj);
+      this.removeCollisionObject(obj);
+    });
+    
+    console.log(`✅ Cleared test objects - Remaining collision objects: ${this.collisionObjects.length}`);
   }
 }

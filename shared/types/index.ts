@@ -1,4 +1,33 @@
+
 import { z } from 'zod';
+
+// ...existing code...
+
+// Single source of ItemSchema and Item type
+export const ItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.enum(['weapon', 'armor', 'consumable', 'utility', 'ammunition']),
+  rarity: z.enum(['common', 'uncommon', 'rare', 'epic', 'legendary']),
+  durability: z.number().min(0).max(100).optional(),
+  weight: z.number().min(0),
+  value: z.number().min(0),
+  properties: z.record(z.any()),
+});
+export type Item = z.infer<typeof ItemSchema>;
+
+// Gun/Weapon System Types (must be after ItemSchema definition)
+export const GunSchema = ItemSchema.extend({
+  type: z.literal('weapon'),
+  ammo: z.number().min(0),
+  maxAmmo: z.number().min(1),
+  reloadTime: z.number().min(0), // seconds
+  damage: z.number().min(1),
+  icon: z.string(), // SVG path or import
+  slot: z.number().min(1).max(9),
+  name: z.string(),
+});
+export type Gun = z.infer<typeof GunSchema>;
 
 // Character System Types
 export const CharacterClassSchema = z.enum(['assault', 'sniper', 'medic', 'engineer', 'demolitions']);
@@ -14,17 +43,7 @@ export const CharacterStatsSchema = z.object({
 });
 export type CharacterStats = z.infer<typeof CharacterStatsSchema>;
 
-export const ItemSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  type: z.enum(['weapon', 'armor', 'consumable', 'utility', 'ammunition']),
-  rarity: z.enum(['common', 'uncommon', 'rare', 'epic', 'legendary']),
-  durability: z.number().min(0).max(100).optional(),
-  weight: z.number().min(0),
-  value: z.number().min(0),
-  properties: z.record(z.any()),
-});
-export type Item = z.infer<typeof ItemSchema>;
+// ...existing code...
 
 export const CharacterSchema = z.object({
   id: z.string(),
